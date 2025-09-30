@@ -12,7 +12,7 @@ enum Mode {
     // Big endian
     BE,
     // Little Endian
-    LE
+    LE,
 }
 
 static ERROR_MSG: &str = "No more space";
@@ -20,8 +20,8 @@ static ERROR_MSG: &str = "No more space";
 /// Encapsulates a simple Byte writer with
 /// support for Endian aware writes
 pub struct ZByteWriter<'a> {
-    buffer:   &'a mut [u8],
-    position: usize
+    buffer: &'a mut [u8],
+    position: usize,
 }
 
 impl<'a> ZByteWriter<'a> {
@@ -72,8 +72,8 @@ impl<'a> ZByteWriter<'a> {
     /// # Arguments
     pub fn new(data: &'a mut [u8]) -> ZByteWriter<'a> {
         ZByteWriter {
-            buffer:   data,
-            position: 0
+            buffer: data,
+            position: 0,
         }
     }
     /// Return number of unwritten bytes in this stream
@@ -126,7 +126,7 @@ impl<'a> ZByteWriter<'a> {
 
                 Ok(())
             }
-            None => Err(ERROR_MSG)
+            None => Err(ERROR_MSG),
         }
     }
 
@@ -220,7 +220,7 @@ impl<'a> ZByteWriter<'a> {
 
         match self.buffer.get(start..end) {
             Some(bytes) => Ok(bytes),
-            None => Err(ERROR_MSG)
+            None => Err(ERROR_MSG),
         }
     }
 

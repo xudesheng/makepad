@@ -19,7 +19,7 @@ use crate::errors::DecodeErrors;
 use crate::marker::Marker;
 use crate::misc::{calculate_padded_width, setup_component_params};
 use crate::worker::{
-    color_convert_no_sampling, upsample_and_color_convert_h, upsample_and_color_convert_v
+    color_convert_no_sampling, upsample_and_color_convert_h, upsample_and_color_convert_v,
 };
 use crate::JpegDecoder;
 
@@ -84,7 +84,8 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
     )]
     #[inline(never)]
     pub(crate) fn decode_mcu_ycbcr_baseline(
-        &mut self, pixels: &mut [u8]
+        &mut self,
+        pixels: &mut [u8],
     ) -> Result<(), DecodeErrors> {
         setup_component_params(self)?;
 
@@ -150,7 +151,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
             // components.
             if min(
                 self.options.jpeg_get_out_colorspace().num_components() - 1,
-                pos
+                pos,
             ) == pos
                 || self.input_colorspace == ColorSpace::YCCK
                 || self.input_colorspace == ColorSpace::CMYK
@@ -198,7 +199,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
                 width,
                 padded_width,
                 &mut pixels_written,
-                &mut upsampler_scratch_space
+                &mut upsampler_scratch_space,
             )?;
         }
 
@@ -207,7 +208,10 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
         Ok(())
     }
     fn decode_mcu_width(
-        &mut self, mcu_width: usize, tmp: &mut [i32; 64], stream: &mut BitStream
+        &mut self,
+        mcu_width: usize,
+        tmp: &mut [i32; 64],
+        stream: &mut BitStream,
     ) -> Result<(), DecodeErrors> {
         for j in 0..mcu_width {
             // iterate over components
@@ -238,7 +242,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
                             ac_table,
                             qt_table,
                             tmp,
-                            &mut component.dc_pred
+                            &mut component.dc_pred,
                         )?;
 
                         if component.needed {
@@ -326,8 +330,14 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
     }
     #[allow(clippy::too_many_lines, clippy::too_many_arguments)]
     pub(crate) fn post_process(
-        &mut self, pixels: &mut [u8], i: usize, mcu_height: usize, width: usize,
-        padded_width: usize, pixels_written: &mut usize, upsampler_scratch_space: &mut [i16]
+        &mut self,
+        pixels: &mut [u8],
+        i: usize,
+        mcu_height: usize,
+        width: usize,
+        padded_width: usize,
+        pixels_written: &mut usize,
+        upsampler_scratch_space: &mut [i16],
     ) -> Result<(), DecodeErrors> {
         let out_colorspace_components = self.options.jpeg_get_out_colorspace().num_components();
 
@@ -342,7 +352,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
                     self.options.jpeg_get_out_colorspace(),
                     &mut pixels[*pixels_written..],
                     width,
-                    padded_width
+                    padded_width,
                 )?;
 
                 // increment pointer to number of pixels written
@@ -360,7 +370,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
                     pixels_written,
                     upsampler_scratch_space,
                     i,
-                    mcu_height
+                    mcu_height,
                 )?;
             }
         } else {
@@ -378,7 +388,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
                 self.options.jpeg_get_out_colorspace(),
                 &mut pixels[*pixels_written..],
                 width,
-                padded_width
+                padded_width,
             )?;
 
             // increment pointer to number of pixels written

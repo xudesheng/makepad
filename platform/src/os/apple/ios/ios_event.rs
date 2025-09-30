@@ -1,20 +1,7 @@
-use {
-    crate::{
-        event::{
-            MouseDownEvent,
-            MouseUpEvent,
-            MouseMoveEvent,
-            ScrollEvent,
-            WindowGeomChangeEvent,
-            TextInputEvent,
-            KeyEvent,
-            TextClipboardEvent,
-            TimerEvent,
-            LongPressEvent,
-            TouchUpdateEvent,
-            VirtualKeyboardEvent,
-        },
-    }
+use crate::event::{
+    KeyEvent, LongPressEvent, MouseDownEvent, MouseMoveEvent, MouseUpEvent, ScrollEvent,
+    TextClipboardEvent, TextInputEvent, TimerEvent, TouchUpdateEvent, VirtualKeyboardEvent,
+    WindowGeomChangeEvent,
 };
 
 #[derive(Debug, Clone)]
@@ -30,9 +17,9 @@ pub enum IosEvent {
     MouseMove(MouseMoveEvent),
     TouchUpdate(TouchUpdateEvent),
     LongPress(LongPressEvent),
-    
+
     Scroll(ScrollEvent),
-    
+
     TextInput(TextInputEvent),
     KeyDown(KeyEvent),
     KeyUp(KeyEvent),

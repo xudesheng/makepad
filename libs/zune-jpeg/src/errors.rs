@@ -13,7 +13,7 @@ use core::fmt::{Debug, Display, Formatter};
 
 use crate::misc::{
     START_OF_FRAME_EXT_AR, START_OF_FRAME_EXT_SEQ, START_OF_FRAME_LOS_SEQ,
-    START_OF_FRAME_LOS_SEQ_AR, START_OF_FRAME_PROG_DCT_AR
+    START_OF_FRAME_LOS_SEQ_AR, START_OF_FRAME_PROG_DCT_AR,
 };
 
 /// Common Decode errors
@@ -46,7 +46,7 @@ pub enum DecodeErrors {
     /// Large image dimensions(Corrupted data)?
     LargeDimensions(usize),
     /// Too small output for size
-    TooSmallOutput(usize, usize)
+    TooSmallOutput(usize, usize),
 }
 
 #[cfg(feature = "std")]
@@ -110,7 +110,7 @@ pub enum UnsupportedSchemes {
     /// Progressive DCT, arithmetic coding,
     ProgressiveDctArithmetic,
     /// Lossless ( sequential), arithmetic coding
-    LosslessArithmetic
+    LosslessArithmetic,
 }
 
 impl Debug for UnsupportedSchemes {
@@ -151,7 +151,7 @@ impl UnsupportedSchemes {
             START_OF_FRAME_LOS_SEQ_AR => Some(Self::LosslessArithmetic),
             START_OF_FRAME_EXT_SEQ => Some(Self::ExtendedSequentialHuffman),
             START_OF_FRAME_EXT_AR => Some(Self::ExtendedSequentialDctArithmetic),
-            _ => None
+            _ => None,
         }
     }
 }

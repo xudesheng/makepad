@@ -24,13 +24,13 @@ use crate::misc::{SOFMarkers, UN_ZIGZAG};
 ///**B.2.4.2 Huffman table-specification syntax**
 #[allow(clippy::similar_names, clippy::cast_sign_loss)]
 pub(crate) fn parse_huffman<T: ZReaderTrait>(
-    decoder: &mut JpegDecoder<T>
+    decoder: &mut JpegDecoder<T>,
 ) -> Result<(), DecodeErrors>
 where
 {
     // Read the length of the Huffman table
     let mut dht_length = i32::from(decoder.stream.get_u16_be_err()?.checked_sub(2).ok_or(
-        DecodeErrors::FormatStatic("Invalid Huffman length in image")
+        DecodeErrors::FormatStatic("Invalid Huffman length in image"),
     )?);
 
     while dht_length > 16 {
@@ -67,7 +67,7 @@ where
         // The sum of the number of symbols cannot be greater than 256;
         if symbols_sum > 256 {
             return Err(DecodeErrors::FormatStatic(
-                "Encountered Huffman table with excessive length in DHT"
+                "Encountered Huffman table with excessive length in DHT",
             ));
         }
         if symbols_sum > dht_length {
@@ -92,7 +92,7 @@ where
                     &num_symbols,
                     symbols,
                     true,
-                    decoder.is_progressive
+                    decoder.is_progressive,
                 )?);
             }
             _ => {
@@ -100,7 +100,7 @@ where
                     &num_symbols,
                     symbols,
                     false,
-                    decoder.is_progressive
+                    decoder.is_progressive,
                 )?);
             }
         }
@@ -122,7 +122,7 @@ pub(crate) fn parse_dqt<T: ZReaderTrait>(img: &mut JpegDecoder<T>) -> Result<(),
             .get_u16_be_err()?
             .checked_sub(2)
             .ok_or(DecodeErrors::FormatStatic(
-                "Invalid DQT length. Length should be greater than 2"
+                "Invalid DQT length. Length should be greater than 2",
             ))?;
     // A single DQT header may have multiple QT's
     while qt_length > 0 {
@@ -181,11 +181,12 @@ pub(crate) fn parse_dqt<T: ZReaderTrait>(img: &mut JpegDecoder<T>) -> Result<(),
 /// Section:`B.2.2 Frame header syntax`
 
 pub(crate) fn parse_start_of_frame<T: ZReaderTrait>(
-    sof: SOFMarkers, img: &mut JpegDecoder<T>
+    sof: SOFMarkers,
+    img: &mut JpegDecoder<T>,
 ) -> Result<(), DecodeErrors> {
     if img.seen_sof {
         return Err(DecodeErrors::SofError(
-            "Two Start of Frame Markers".to_string()
+            "Two Start of Frame Markers".to_string(),
         ));
     }
     // Get length of the frame header
@@ -231,7 +232,7 @@ pub(crate) fn parse_start_of_frame<T: ZReaderTrait>(
 
     if num_components == 0 {
         return Err(DecodeErrors::SofError(
-            "Number of components cannot be zero.".to_string()
+            "Number of components cannot be zero.".to_string(),
         ));
     }
 
@@ -305,7 +306,7 @@ pub(crate) fn parse_sos<T: ZReaderTrait>(image: &mut JpegDecoder<T>) -> Result<(
 
     if image.info.components == 0 {
         return Err(DecodeErrors::FormatStatic(
-            "Error decoding SOF Marker, Number of components cannot be zero."
+            "Error decoding SOF Marker, Number of components cannot be zero.",
         ));
     }
 
@@ -408,7 +409,7 @@ pub(crate) fn parse_sos<T: ZReaderTrait>(image: &mut JpegDecoder<T>) -> Result<(
 
 /// Parse Adobe App14 segment
 pub(crate) fn parse_app14<T: ZReaderTrait>(
-    decoder: &mut JpegDecoder<T>
+    decoder: &mut JpegDecoder<T>,
 ) -> Result<(), DecodeErrors> {
     // skip length
     let mut length = usize::from(decoder.stream.get_u16_be());
@@ -418,7 +419,7 @@ pub(crate) fn parse_app14<T: ZReaderTrait>(
     }
     if length < 14 {
         return Err(DecodeErrors::FormatStatic(
-            "Too short of a length for App14 segment"
+            "Too short of a length for App14 segment",
         ));
     }
     if decoder.stream.peek_at(0, 5) == Ok(b"Adobe") {
@@ -460,7 +461,7 @@ pub(crate) fn parse_app14<T: ZReaderTrait>(
 ///
 /// This contains the exif tag
 pub(crate) fn parse_app1<T: ZReaderTrait>(
-    decoder: &mut JpegDecoder<T>
+    decoder: &mut JpegDecoder<T>,
 ) -> Result<(), DecodeErrors> {
     // contains exif data
     let mut length = usize::from(decoder.stream.get_u16_be());
@@ -489,7 +490,7 @@ pub(crate) fn parse_app1<T: ZReaderTrait>(
 }
 
 pub(crate) fn parse_app2<T: ZReaderTrait>(
-    decoder: &mut JpegDecoder<T>
+    decoder: &mut JpegDecoder<T>,
 ) -> Result<(), DecodeErrors> {
     let mut length = usize::from(decoder.stream.get_u16_be());
 
@@ -514,7 +515,7 @@ pub(crate) fn parse_app2<T: ZReaderTrait>(
         let icc_chunk = ICCChunk {
             seq_no,
             num_markers,
-            data
+            data,
         };
         decoder.icc_data.push(icc_chunk);
     }
@@ -529,7 +530,7 @@ pub(crate) fn parse_app2<T: ZReaderTrait>(
 fn un_zig_zag<T>(a: &[T]) -> [i32; 64]
 where
     T: Default + Copy,
-    i32: core::convert::From<T>
+    i32: core::convert::From<T>,
 {
     let mut output = [i32::default(); 64];
 

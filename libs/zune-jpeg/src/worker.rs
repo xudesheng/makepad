@@ -27,9 +27,13 @@ fn blinn_8x8(in_val: u8, y: u8) -> u8 {
 
 #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
 pub(crate) fn color_convert_no_sampling(
-    unprocessed: &[&[i16]; MAX_COMPONENTS], color_convert_16: ColorConvert16Ptr,
-    input_colorspace: ColorSpace, output_colorspace: ColorSpace, output: &mut [u8], width: usize,
-    padded_width: usize
+    unprocessed: &[&[i16]; MAX_COMPONENTS],
+    color_convert_16: ColorConvert16Ptr,
+    input_colorspace: ColorSpace,
+    output_colorspace: ColorSpace,
+    output: &mut [u8],
+    width: usize,
+    padded_width: usize,
 ) -> Result<(), DecodeErrors> // so many parameters..
 {
     // maximum sampling factors are in Y-channel, no need to pass them.
@@ -46,7 +50,7 @@ pub(crate) fn color_convert_no_sampling(
         }
         (
             ColorSpace::YCbCr,
-            ColorSpace::RGB | ColorSpace::RGBA | ColorSpace::BGR | ColorSpace::BGRA
+            ColorSpace::RGB | ColorSpace::RGBA | ColorSpace::BGR | ColorSpace::BGRA,
         ) => {
             color_convert_ycbcr(
                 unprocessed,
@@ -54,7 +58,7 @@ pub(crate) fn color_convert_no_sampling(
                 padded_width,
                 output_colorspace,
                 color_convert_16,
-                output
+                output,
             );
         }
         (ColorSpace::YCCK, ColorSpace::RGB) => {
@@ -64,7 +68,7 @@ pub(crate) fn color_convert_no_sampling(
                 padded_width,
                 output_colorspace,
                 color_convert_16,
-                output
+                output,
             );
         }
 
@@ -75,7 +79,7 @@ pub(crate) fn color_convert_no_sampling(
                 padded_width,
                 output_colorspace,
                 color_convert_16,
-                output
+                output,
             );
         }
         (ColorSpace::CMYK, ColorSpace::RGB) => {
@@ -99,7 +103,10 @@ pub(crate) fn color_convert_no_sampling(
 /// if necessary
 #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
 fn copy_removing_padding(
-    mcu_block: &[&[i16]; MAX_COMPONENTS], width: usize, padded_width: usize, output: &mut [u8]
+    mcu_block: &[&[i16]; MAX_COMPONENTS],
+    width: usize,
+    padded_width: usize,
+    output: &mut [u8],
 ) {
     for (((pix_w, c_w), m_w), y_w) in output
         .chunks_exact_mut(width * 3)
@@ -118,8 +125,12 @@ fn copy_removing_padding(
 /// Convert YCCK image to rgb
 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 fn color_convert_ycck_to_rgb<const NUM_COMPONENTS: usize>(
-    mcu_block: &[&[i16]; MAX_COMPONENTS], width: usize, padded_width: usize,
-    output_colorspace: ColorSpace, color_convert_16: ColorConvert16Ptr, output: &mut [u8]
+    mcu_block: &[&[i16]; MAX_COMPONENTS],
+    width: usize,
+    padded_width: usize,
+    output_colorspace: ColorSpace,
+    color_convert_16: ColorConvert16Ptr,
+    output: &mut [u8],
 ) {
     color_convert_ycbcr(
         mcu_block,
@@ -127,7 +138,7 @@ fn color_convert_ycck_to_rgb<const NUM_COMPONENTS: usize>(
         padded_width,
         output_colorspace,
         color_convert_16,
-        output
+        output,
     );
     for (pix_w, m_w) in output
         .chunks_exact_mut(width * 3)
@@ -144,7 +155,10 @@ fn color_convert_ycck_to_rgb<const NUM_COMPONENTS: usize>(
 
 #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
 fn color_convert_cymk_to_rgb<const NUM_COMPONENTS: usize>(
-    mcu_block: &[&[i16]; MAX_COMPONENTS], width: usize, padded_width: usize, output: &mut [u8]
+    mcu_block: &[&[i16]; MAX_COMPONENTS],
+    width: usize,
+    padded_width: usize,
+    output: &mut [u8],
 ) {
     for ((((pix_w, c_w), m_w), y_w), k_w) in output
         .chunks_exact_mut(width * NUM_COMPONENTS)
@@ -180,8 +194,12 @@ fn color_convert_cymk_to_rgb<const NUM_COMPONENTS: usize>(
     clippy::unwrap_used
 )]
 fn color_convert_ycbcr(
-    mcu_block: &[&[i16]; MAX_COMPONENTS], width: usize, padded_width: usize,
-    output_colorspace: ColorSpace, color_convert_16: ColorConvert16Ptr, output: &mut [u8]
+    mcu_block: &[&[i16]; MAX_COMPONENTS],
+    width: usize,
+    padded_width: usize,
+    output_colorspace: ColorSpace,
+    color_convert_16: ColorConvert16Ptr,
+    output: &mut [u8],
 ) {
     let num_components = output_colorspace.num_components();
 
@@ -228,7 +246,7 @@ fn color_convert_ycbcr(
                 cb.try_into().unwrap(),
                 cr.try_into().unwrap(),
                 out_c,
-                &mut 0
+                &mut 0,
             );
         }
         //we have more pixels in the end that can't be handled by the main loop.
@@ -246,7 +264,7 @@ fn color_convert_ycbcr(
                 cb.try_into().unwrap(),
                 cr.try_into().unwrap(),
                 &mut temp,
-                &mut 0
+                &mut 0,
             );
         }
 
@@ -260,9 +278,13 @@ fn color_convert_ycbcr(
 }
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn upsample_and_color_convert_h(
-    component_data: &mut [Components], color_convert_16: ColorConvert16Ptr,
-    input_colorspace: ColorSpace, output_colorspace: ColorSpace, output: &mut [u8], width: usize,
-    padded_width: usize
+    component_data: &mut [Components],
+    color_convert_16: ColorConvert16Ptr,
+    input_colorspace: ColorSpace,
+    output_colorspace: ColorSpace,
+    output: &mut [u8],
+    width: usize,
+    padded_width: usize,
 ) -> Result<(), DecodeErrors> {
     let v_samp = component_data[0].vertical_sample;
 
@@ -307,7 +329,7 @@ pub(crate) fn upsample_and_color_convert_h(
             output_colorspace,
             out,
             width,
-            padded_width
+            padded_width,
         )?;
     }
     Ok(())
@@ -315,10 +337,17 @@ pub(crate) fn upsample_and_color_convert_h(
 
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub(crate) fn upsample_and_color_convert_v(
-    component_data: &mut [Components], color_convert_16: ColorConvert16Ptr,
-    input_colorspace: ColorSpace, output_colorspace: ColorSpace, output: &mut [u8], width: usize,
-    padded_width: usize, pixels_written: &mut usize, upsampler_scratch_space: &mut [i16], i: usize,
-    mcu_height: usize
+    component_data: &mut [Components],
+    color_convert_16: ColorConvert16Ptr,
+    input_colorspace: ColorSpace,
+    output_colorspace: ColorSpace,
+    output: &mut [u8],
+    width: usize,
+    padded_width: usize,
+    pixels_written: &mut usize,
+    upsampler_scratch_space: &mut [i16],
+    i: usize,
+    mcu_height: usize,
 ) -> Result<(), DecodeErrors> {
     // HV and V sampling are a bust.
     // They suck because we need top row and bottom row.
@@ -358,7 +387,7 @@ pub(crate) fn upsample_and_color_convert_v(
 
     let (max_h_sample, max_v_sample) = (
         y_component[0].horizontal_sample,
-        y_component[0].vertical_sample
+        y_component[0].vertical_sample,
     );
 
     let width_stride = y_component[0].width_stride * 2;
@@ -416,7 +445,7 @@ pub(crate) fn upsample_and_color_convert_v(
             output_colorspace,
             &mut output[*pixels_written..*pixels_written + out_stride],
             width,
-            padded_width
+            padded_width,
         )?;
         *pixels_written += out_stride;
     }
@@ -517,7 +546,7 @@ pub(crate) fn upsample_and_color_convert_v(
             output_colorspace,
             out,
             width,
-            padded_width
+            padded_width,
         )?;
         *pixels_written += out_stride;
     }

@@ -1,22 +1,7 @@
-use {
-    crate::{
-        event::{
-            MouseDownEvent,
-            MouseUpEvent,
-            MouseMoveEvent,
-            ScrollEvent,
-            WindowGeomChangeEvent,
-            WindowDragQueryEvent,
-            WindowCloseRequestedEvent,
-            WindowClosedEvent,
-            TextInputEvent,
-            KeyEvent,
-            DragEvent,
-            DropEvent,
-            TextClipboardEvent,
-            TimerEvent,
-        },
-    }
+use crate::event::{
+    DragEvent, DropEvent, KeyEvent, MouseDownEvent, MouseMoveEvent, MouseUpEvent, ScrollEvent,
+    TextClipboardEvent, TextInputEvent, TimerEvent, WindowCloseRequestedEvent, WindowClosedEvent,
+    WindowDragQueryEvent, WindowGeomChangeEvent,
 };
 
 #[derive(Debug)]
@@ -26,12 +11,12 @@ pub enum XlibEvent {
     WindowGeomChange(WindowGeomChangeEvent),
     WindowClosed(WindowClosedEvent),
     Paint,
-    
+
     MouseDown(MouseDownEvent),
     MouseUp(MouseUpEvent),
     MouseMove(MouseMoveEvent),
     Scroll(ScrollEvent),
-    
+
     WindowDragQuery(WindowDragQueryEvent),
     WindowCloseRequested(WindowCloseRequestedEvent),
     TextInput(TextInputEvent),

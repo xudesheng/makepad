@@ -130,14 +130,14 @@ pub struct DecoderOptions {
     ///
     /// - Default value: 16384
     /// - Respected by: `all decoders`
-    max_width:      usize,
+    max_width: usize,
     /// Maximum height for which decoders will not
     /// try to decode images larger than the
     /// specified height
     ///
     /// - Default value: 16384
     /// - Respected by: `all decoders`
-    max_height:     usize,
+    max_height: usize,
     /// Output colorspace
     ///
     /// The jpeg decoder allows conversion to a separate colorspace
@@ -157,15 +157,15 @@ pub struct DecoderOptions {
     ///
     /// - Default value:100
     /// - Respected by: `jpeg`
-    max_scans:     usize,
+    max_scans: usize,
     /// Maximum size for deflate.
     /// Respected by all decoders that use inflate/deflate
     deflate_limit: usize,
     /// Boolean flags that influence decoding
-    flags:         DecoderFlags,
+    flags: DecoderFlags,
     /// The byte endian of the returned bytes will be stored in
     /// in case a single pixel spans more than a byte
-    endianness:    ByteEndian
+    endianness: ByteEndian,
 }
 
 /// Initializers
@@ -614,12 +614,12 @@ impl Default for DecoderOptions {
     fn default() -> Self {
         Self {
             out_colorspace: ColorSpace::RGB,
-            max_width:      1 << 14,
-            max_height:     1 << 14,
-            max_scans:      100,
-            deflate_limit:  1 << 30,
-            flags:          decoder_strict_mode(),
-            endianness:     ByteEndian::BE
+            max_width: 1 << 14,
+            max_height: 1 << 14,
+            max_scans: 100,
+            deflate_limit: 1 << 30,
+            flags: decoder_strict_mode(),
+            endianness: ByteEndian::BE,
         }
     }
 }

@@ -4,21 +4,16 @@ use {
         makepad_draw::{
             text::{
                 geom::Point,
-                selection::{
-                    Cursor,
-                    CursorPosition,
-                    Selection
-                },
                 layouter::LaidoutText,
+                selection::{Cursor, CursorPosition, Selection},
             },
-            *
+            *,
         },
         widget::*,
     },
     std::rc::Rc,
     unicode_segmentation::{GraphemeCursor, UnicodeSegmentation},
 };
-
 
 live_design! {
     link widgets;
@@ -27,7 +22,7 @@ live_design! {
     use makepad_draw::shader::std::*;
 
     pub TextInputBase = {{TextInput}} {}
-    
+
     pub TextInputFlat = <TextInputBase> {
         width: Fill, height: Fit,
         padding: <THEME_MSPACE_1> { left: (THEME_SPACE_2), right: (THEME_SPACE_2) }
@@ -37,7 +32,7 @@ live_design! {
         is_read_only: false,
         is_numeric_only: false
         empty_text: "Your text here",
-        
+
         draw_bg: {
             instance hover: 0.0
             instance focus: 0.0
@@ -48,8 +43,8 @@ live_design! {
             uniform border_radius: (THEME_CORNER_RADIUS)
             uniform border_size: (THEME_BEVELING)
 
-            uniform gradient_border_horizontal: 0.0; 
-            uniform gradient_fill_horizontal: 0.0; 
+            uniform gradient_border_horizontal: 0.0;
+            uniform gradient_fill_horizontal: 0.0;
 
             uniform color_dither: 1.0
 
@@ -116,7 +111,7 @@ live_design! {
                     border_color_2_empty = self.border_color_2_empty;
                     border_color_2_disabled = self.border_color_2_disabled;
                 }
-                
+
                 let border_sz_uv = vec2(
                     self.border_size / self.rect_size.x,
                     self.border_size / self.rect_size.y
@@ -146,7 +141,7 @@ live_design! {
                     self.pos.x * scale_factor_fill.x - border_sz_uv.x * 2. + dither,
                     self.pos.y * scale_factor_fill.y - border_sz_uv.y * 2. + dither
                 )
-                
+
                 let gradient_border_dir = gradient_border.y;
                 if (self.gradient_border_horizontal > 0.5) {
                     gradient_border_dir = gradient_border.x;
@@ -213,7 +208,7 @@ live_design! {
                     ),
                     self.border_size
                 );
-                
+
                 return sdf.result
             }
         }
@@ -241,7 +236,7 @@ live_design! {
 
             fn get_color(self) -> vec4 {
                 return
-                    mix( 
+                    mix(
                         mix(
                             mix(
                                 mix(
@@ -357,7 +352,7 @@ live_design! {
             instance empty: 0.0
             instance disabled: 0.0
             instance blink: 0.0
-            
+
             uniform border_radius: 0.5
 
             uniform color: (THEME_COLOR_TEXT_CURSOR)
@@ -424,7 +419,7 @@ live_design! {
                         draw_text: {down: 0.0, hover: 0.0}
                     }
                 }
-                
+
                 on = {
                     from: {
                         all: Forward {duration: 0.1}
@@ -435,7 +430,7 @@ live_design! {
                         draw_text: {down: 0.0, hover: [{time: 0.0, value: 1.0}],}
                     }
                 }
-                
+
                 down = {
                     from: {all: Forward {duration: 0.2}}
                     apply: {
@@ -474,7 +469,7 @@ live_design! {
                         draw_text: {down: 0.0, hover: 0.0}
                     }
                 }
-                
+
                 on = {
                     from: {
                         all: Forward {duration: 0.1}
@@ -485,7 +480,7 @@ live_design! {
                         draw_text: {down: 0.0, hover: [{time: 0.0, value: 1.0}],}
                     }
                 }
-                
+
                 down = {
                     from: {all: Forward {duration: 0.2}}
                     apply: {
@@ -535,8 +530,8 @@ live_design! {
 
     pub TextInputGradientX = <TextInput> {
         draw_bg: {
-            gradient_border_horizontal: 1.0; 
-            gradient_fill_horizontal: 1.0; 
+            gradient_border_horizontal: 1.0;
+            gradient_fill_horizontal: 1.0;
 
             color: (THEME_COLOR_INSET_1)
             color_hover: (THEME_COLOR_INSET_1_HOVER)
@@ -549,7 +544,7 @@ live_design! {
         }
 
         draw_selection: {
-            gradient_fill_horizontal: 1.0; 
+            gradient_fill_horizontal: 1.0;
 
             color: (THEME_COLOR_SELECTION)
             color_hover: (THEME_COLOR_SELECTION_HOVER)
@@ -566,64 +561,90 @@ live_design! {
             color_2_disabled: (THEME_COLOR_SELECTION_DISABLED)
         }
     }
-        
+
 
     pub TextInputGradientY = <TextInputGradientX> {
         draw_bg: {
-            gradient_border_horizontal: 0.0; 
-            gradient_fill_horizontal: 0.0; 
+            gradient_border_horizontal: 0.0;
+            gradient_fill_horizontal: 0.0;
         }
 
         draw_selection: {
-            gradient_fill_horizontal: 0.0; 
+            gradient_fill_horizontal: 0.0;
         }
     }
 }
 
 #[derive(Live, Widget)]
 pub struct TextInput {
-    #[animator] animator: Animator,
+    #[animator]
+    animator: Animator,
 
-    #[redraw] #[live] draw_bg: DrawColor,
-    #[live] draw_text: DrawText,
-    #[live] draw_selection: DrawQuad,
-    #[live] draw_cursor: DrawQuad,
+    #[redraw]
+    #[live]
+    draw_bg: DrawColor,
+    #[live]
+    draw_text: DrawText,
+    #[live]
+    draw_selection: DrawQuad,
+    #[live]
+    draw_cursor: DrawQuad,
 
-    #[layout] layout: Layout,
-    #[walk] walk: Walk,
-    #[live] label_align: Align,
+    #[layout]
+    layout: Layout,
+    #[walk]
+    walk: Walk,
+    #[live]
+    label_align: Align,
 
-    #[live] is_password: bool,
-    #[live] is_read_only: bool,
-    #[live] is_numeric_only: bool,
-    #[live] empty_text: String,
-    #[rust] text: String,
-    #[live(0.5)] blink_speed: f64,
+    #[live]
+    is_password: bool,
+    #[live]
+    is_read_only: bool,
+    #[live]
+    is_numeric_only: bool,
+    #[live]
+    empty_text: String,
+    #[rust]
+    text: String,
+    #[live(0.5)]
+    blink_speed: f64,
 
-    #[rust] password_text: String,
-    #[rust] laidout_text: Option<Rc<LaidoutText>>,
-    #[rust] text_area: Area,
-    #[rust] selection: Selection,
-    #[rust] history: History,
-    #[rust] blink_timer: Timer,
+    #[rust]
+    password_text: String,
+    #[rust]
+    laidout_text: Option<Rc<LaidoutText>>,
+    #[rust]
+    text_area: Area,
+    #[rust]
+    selection: Selection,
+    #[rust]
+    history: History,
+    #[rust]
+    blink_timer: Timer,
 }
 
- impl LiveHook for TextInput{
-     fn apply_value_unknown(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) -> usize {
-        if nodes[index].id == live_id!(text){
-            if !apply.from.is_update_from_doc(){
-                return self.text.apply(cx, apply, index, nodes)
+impl LiveHook for TextInput {
+    fn apply_value_unknown(
+        &mut self,
+        cx: &mut Cx,
+        apply: &mut Apply,
+        index: usize,
+        nodes: &[LiveNode],
+    ) -> usize {
+        if nodes[index].id == live_id!(text) {
+            if !apply.from.is_update_from_doc() {
+                return self.text.apply(cx, apply, index, nodes);
             }
-        }
-        else{
+        } else {
             cx.apply_error_no_matching_field(live_error_origin!(), index, nodes);
         }
         nodes.skip_node(index)
-     }
-     fn after_new_from_doc(&mut self, cx:&mut Cx){
-         self.check_text_is_empty(cx);
-     }
- }
+    }
+    fn after_new_from_doc(&mut self, cx: &mut Cx) {
+        self.check_text_is_empty(cx);
+    }
+}
 
 impl TextInput {
     pub fn is_password(&self) -> bool {
@@ -679,7 +700,6 @@ impl TextInput {
         }
     }
 
-
     pub fn selection(&self) -> Selection {
         self.selection
     }
@@ -703,11 +723,11 @@ impl TextInput {
                 } else {
                     cursor
                 },
-                cursor
-            }
+                cursor,
+            },
         );
     }
-    
+
     pub fn selected_text(&self) -> &str {
         &self.text[self.selection.start().index..self.selection.end().index]
     }
@@ -735,7 +755,8 @@ impl TextInput {
         let Some(laidout_text) = self.laidout_text.as_ref() else {
             return Err(());
         };
-        let cursor = laidout_text.point_in_lpxs_to_cursor(point_in_lpxs / self.draw_text.font_scale);
+        let cursor =
+            laidout_text.point_in_lpxs_to_cursor(point_in_lpxs / self.draw_text.font_scale);
         Ok(self.password_cursor_to_cursor(cursor))
     }
 
@@ -778,7 +799,8 @@ impl TextInput {
         let grapheme_index = self.text[..index].graphemes(true).count();
         self.password_text
             .grapheme_indices(true)
-            .nth(grapheme_index).map_or(self.password_text.len(), |(index, _)| index)
+            .nth(grapheme_index)
+            .map_or(self.password_text.len(), |(index, _)| index)
     }
 
     fn password_index_to_index(&self, password_index: usize) -> usize {
@@ -788,7 +810,8 @@ impl TextInput {
         let grapheme_index = self.password_text[..password_index].graphemes(true).count();
         self.text
             .grapheme_indices(true)
-            .nth(grapheme_index).map_or(self.text.len(), |(index, _)| index)
+            .nth(grapheme_index)
+            .map_or(self.text.len(), |(index, _)| index)
     }
 
     fn inner_walk(&self) -> Walk {
@@ -806,11 +829,8 @@ impl TextInput {
         let text = if self.is_password {
             self.password_text.clear();
             for grapheme in self.text.graphemes(true) {
-                self.password_text.push(if grapheme == "\n" {
-                    '\n'
-                } else {
-                    '•'
-                });
+                self.password_text
+                    .push(if grapheme == "\n" { '\n' } else { '•' });
             }
             &self.password_text
         } else {
@@ -829,27 +849,20 @@ impl TextInput {
             0.0,
             max_width_in_lpxs,
             wrap,
-            self.label_align, 
-            text
+            self.label_align,
+            text,
         ));
     }
 
     fn draw_text(&mut self, cx: &mut Cx2d) -> Rect {
         let inner_walk = self.inner_walk();
         let text_rect = if self.text.is_empty() {
-            self.draw_text.draw_walk(
-                cx,
-                inner_walk,
-                self.label_align,
-                &self.empty_text
-            )
+            self.draw_text
+                .draw_walk(cx, inner_walk, self.label_align, &self.empty_text)
         } else {
             let laidout_text = self.laidout_text.as_ref().unwrap();
-            self.draw_text.draw_walk_laidout(
-                cx,
-                inner_walk,
-                laidout_text,
-            )
+            self.draw_text
+                .draw_walk_laidout(cx, inner_walk, laidout_text)
         };
         cx.add_aligned_rect_area(&mut self.text_area, text_rect);
         text_rect
@@ -879,7 +892,7 @@ impl TextInput {
                 text_rect.pos.y + cursor_pos.y,
                 (2.0 * self.draw_text.font_scale) as f64,
                 ((row.ascender_in_lpxs - row.descender_in_lpxs) * self.draw_text.font_scale) as f64,
-            )
+            ),
         );
         cursor_pos
     }
@@ -889,11 +902,11 @@ impl TextInput {
             .laidout_text
             .as_ref()
             .expect("layout should not be `None` because we called `layout_text` in `draw_walk`");
-        
+
         self.draw_selection.begin_many_instances(cx);
-        for rect_in_lpxs in laidout_text.selection_rects_in_lpxs(
-            self.selection_to_password_selection(self.selection)
-        ) {
+        for rect_in_lpxs in laidout_text
+            .selection_rects_in_lpxs(self.selection_to_password_selection(self.selection))
+        {
             self.draw_selection.draw_abs(
                 cx,
                 rect(
@@ -901,7 +914,7 @@ impl TextInput {
                     text_rect.pos.y + (rect_in_lpxs.origin.y * self.draw_text.font_scale) as f64,
                     (rect_in_lpxs.size.width * self.draw_text.font_scale) as f64,
                     (rect_in_lpxs.size.height * self.draw_text.font_scale) as f64,
-                )
+                ),
             );
         }
         self.draw_selection.end_many_instances(cx);
@@ -918,7 +931,7 @@ impl TextInput {
                 index: prev_grapheme_boundary(&self.text, self.selection.cursor.index),
                 prefer_next_row: true,
             },
-            keep_selection
+            keep_selection,
         );
         !initial.index_eq(self.selection)
     }
@@ -958,7 +971,7 @@ impl TextInput {
                 },
                 x_in_lpxs: position.x_in_lpxs,
             })?,
-            keep_selection
+            keep_selection,
         );
         Ok(!initial.index_eq(self.selection))
     }
@@ -979,11 +992,11 @@ impl TextInput {
                 row_index: if position.row_index == laidout_text.rows.len() - 1 {
                     laidout_text.rows.len() - 1
                 } else {
-                    position.row_index + 1 
+                    position.row_index + 1
                 },
                 x_in_lpxs: position.x_in_lpxs,
             })?,
-            keep_selection
+            keep_selection,
         );
         Ok(!initial.index_eq(self.selection))
     }
@@ -992,16 +1005,22 @@ impl TextInput {
         self.set_selection(
             cx,
             Selection {
-                anchor: Cursor { index: 0, prefer_next_row: false },
-                cursor: Cursor { index: self.text.len(), prefer_next_row: false },
-            }
+                anchor: Cursor {
+                    index: 0,
+                    prefer_next_row: false,
+                },
+                cursor: Cursor {
+                    index: self.text.len(),
+                    prefer_next_row: false,
+                },
+            },
         );
     }
 
     pub fn select_word(&mut self, cx: &mut Cx) {
-        if self.selection.cursor.index < self.selection.anchor.index { 
+        if self.selection.cursor.index < self.selection.anchor.index {
             self.set_cursor(
-                cx, 
+                cx,
                 Cursor {
                     index: self.ceil_word_boundary(self.selection.cursor.index),
                     prefer_next_row: true,
@@ -1028,7 +1047,7 @@ impl TextInput {
                     cursor: Cursor {
                         index: self.floor_word_boundary(self.selection.cursor.index),
                         prefer_next_row: false,
-                    }
+                    },
                 },
             );
         }
@@ -1062,33 +1081,35 @@ impl TextInput {
 
     fn filter_input(&self, input: &str, is_set_text: bool) -> String {
         // strip out escape sequences and tabs sometimes sent from the IME
-        if input.len() == 1 && input.chars().next().unwrap() <= '\u{1d}'{
+        if input.len() == 1 && input.chars().next().unwrap() <= '\u{1d}' {
             return String::new();
         }
         if self.is_numeric_only {
             let mut contains_dot = if is_set_text {
-                false   
+                false
             } else {
                 let before_selection = self.text[..self.selection.start().index].to_string();
                 let after_selection = self.text[self.selection.end().index..].to_string();
                 before_selection.contains('.') || after_selection.contains('.')
             };
-            input.chars().filter(|char| {
-                match char {
+            input
+                .chars()
+                .filter(|char| match char {
                     '.' | ',' if !contains_dot => {
                         contains_dot = true;
                         true
-                    },
+                    }
                     char => char.is_ascii_digit(),
-                }
-            }).collect()
+                })
+                .collect()
         } else {
             input.to_string()
         }
     }
 
     fn create_or_extend_edit_group(&mut self, edit_kind: EditKind) {
-        self.history.create_or_extend_edit_group(edit_kind, self.selection);
+        self.history
+            .create_or_extend_edit_group(edit_kind, self.selection);
     }
 
     fn apply_edit(&mut self, cx: &mut Cx, edit: Edit) {
@@ -1128,15 +1149,13 @@ impl TextInput {
             self.animator_play(cx, id!(empty.off));
         }
     }
-    
 }
 
 impl Widget for TextInput {
-        
     fn text(&self) -> String {
         self.text.clone()
     }
-    
+
     fn set_text(&mut self, cx: &mut Cx, text: &str) {
         self.text = self.filter_input(text, true);
         self.set_selection(
@@ -1149,15 +1168,15 @@ impl Widget for TextInput {
                 cursor: Cursor {
                     index: self.selection.cursor.index.min(self.text.len()),
                     prefer_next_row: self.selection.cursor.prefer_next_row,
-                }
-            }
+                },
+            },
         );
         self.history.clear();
         self.laidout_text = None;
         self.draw_bg.redraw(cx);
         self.check_text_is_empty(cx);
     }
-    
+
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         self.draw_bg.begin(cx, walk, self.layout);
         self.draw_selection.append_to_draw_call(cx);
@@ -1167,20 +1186,23 @@ impl Widget for TextInput {
         self.draw_selection(cx, text_rect);
         self.draw_bg.end(cx);
         if cx.has_key_focus(self.draw_bg.area()) {
-            cx.show_text_ime(
-                self.draw_bg.area(), 
-                cursor_pos,
-            );
+            cx.show_text_ime(self.draw_bg.area(), cursor_pos);
         }
         cx.add_nav_stop(self.draw_bg.area(), NavRole::TextInput, Margin::default());
         DrawStep::done()
     }
 
-    fn set_disabled(&mut self, cx:&mut Cx, disabled:bool){
-        self.animator_toggle(cx, disabled, Animate::Yes, id!(disabled.on), id!(disabled.off));
+    fn set_disabled(&mut self, cx: &mut Cx, disabled: bool) {
+        self.animator_toggle(
+            cx,
+            disabled,
+            Animate::Yes,
+            id!(disabled.on),
+            id!(disabled.off),
+        );
     }
-                
-    fn disabled(&self, cx:&Cx) -> bool {
+
+    fn disabled(&self, cx: &Cx) -> bool {
         self.animator_in_state(cx, id!(disabled.on))
     }
 
@@ -1210,7 +1232,7 @@ impl Widget for TextInput {
                 self.animator_play(cx, id!(focus.on));
                 self.reset_blink_timer(cx);
                 cx.widget_action(uid, &scope.path, TextInputAction::KeyFocus);
-            },
+            }
             Hit::KeyFocusLost(_) => {
                 self.animator_play(cx, id!(focus.off));
                 self.animator_play(cx, id!(blink.on));
@@ -1218,70 +1240,90 @@ impl Widget for TextInput {
                 cx.hide_text_ime();
                 cx.widget_action(uid, &scope.path, TextInputAction::KeyFocusLost);
             }
-            Hit::KeyDown(kev @ KeyEvent {
-                key_code: KeyCode::ArrowLeft,
-                modifiers: KeyModifiers {
-                    shift: keep_selection,
-                    logo: false,
-                    alt: false,
-                    control: false
+            Hit::KeyDown(
+                kev @ KeyEvent {
+                    key_code: KeyCode::ArrowLeft,
+                    modifiers:
+                        KeyModifiers {
+                            shift: keep_selection,
+                            logo: false,
+                            alt: false,
+                            control: false,
+                        },
+                    ..
                 },
-                ..
-            }) => {
+            ) => {
                 self.reset_blink_timer(cx);
                 let did_move = self.move_cursor_left(cx, keep_selection);
                 if !did_move {
                     cx.widget_action(uid, &scope.path, TextInputAction::KeyDownUnhandled(kev));
                 }
             }
-            Hit::KeyDown(kev @ KeyEvent {
-                key_code: KeyCode::ArrowRight,
-                modifiers: KeyModifiers {
-                    shift: keep_selection,
-                    logo: false,
-                    alt: false,
-                    control: false
+            Hit::KeyDown(
+                kev @ KeyEvent {
+                    key_code: KeyCode::ArrowRight,
+                    modifiers:
+                        KeyModifiers {
+                            shift: keep_selection,
+                            logo: false,
+                            alt: false,
+                            control: false,
+                        },
+                    ..
                 },
-                ..
-            }) => {
+            ) => {
                 self.reset_blink_timer(cx);
                 let did_move = self.move_cursor_right(cx, keep_selection);
                 if !did_move {
                     cx.widget_action(uid, &scope.path, TextInputAction::KeyDownUnhandled(kev));
                 }
             }
-            Hit::KeyDown(kev @ KeyEvent {
-                key_code: KeyCode::ArrowUp,
-                modifiers: KeyModifiers {
-                    shift: keep_selection,
-                    logo: false,
-                    alt: false,
-                    control: false
+            Hit::KeyDown(
+                kev @ KeyEvent {
+                    key_code: KeyCode::ArrowUp,
+                    modifiers:
+                        KeyModifiers {
+                            shift: keep_selection,
+                            logo: false,
+                            alt: false,
+                            control: false,
+                        },
+                    ..
                 },
-                ..
-            }) => {
+            ) => {
                 self.reset_blink_timer(cx);
                 match self.move_cursor_up(cx, keep_selection) {
-                    Ok(true) => { }
-                    Ok(false) => cx.widget_action(uid, &scope.path, TextInputAction::KeyDownUnhandled(kev)),
-                    Err(_) => warning!("can't move cursor up because layout was invalidated by earlier event"),
+                    Ok(true) => {}
+                    Ok(false) => {
+                        cx.widget_action(uid, &scope.path, TextInputAction::KeyDownUnhandled(kev))
+                    }
+                    Err(_) => warning!(
+                        "can't move cursor up because layout was invalidated by earlier event"
+                    ),
                 }
-            },
-            Hit::KeyDown(kev @ KeyEvent {
-                key_code: KeyCode::ArrowDown,
-                modifiers: KeyModifiers {
-                    shift: keep_selection,
-                    logo: false,
-                    alt: false,
-                    control: false
+            }
+            Hit::KeyDown(
+                kev @ KeyEvent {
+                    key_code: KeyCode::ArrowDown,
+                    modifiers:
+                        KeyModifiers {
+                            shift: keep_selection,
+                            logo: false,
+                            alt: false,
+                            control: false,
+                        },
+                    ..
                 },
-                ..
-            }) => {
+            ) => {
                 self.reset_blink_timer(cx);
                 match self.move_cursor_down(cx, keep_selection) {
-                    Ok(true) => { }
-                    Ok(false) => cx.widget_action(uid, &scope.path, TextInputAction::KeyDownUnhandled(kev)),
-                    Err(_) => warning!("can't move cursor down because layout was invalidated by earlier event"),
+                    Ok(true) => {}
+                    Ok(false) => {
+                        cx.widget_action(uid, &scope.path, TextInputAction::KeyDownUnhandled(kev))
+                    }
+                    Err(_) => warning!(
+                        "can't move cursor down because layout was invalidated by earlier event"
+                    ),
                 }
             }
             Hit::KeyDown(KeyEvent {
@@ -1298,17 +1340,13 @@ impl Widget for TextInput {
                 self.reset_blink_timer(cx);
                 self.set_key_focus(cx);
                 let rel = abs - self.text_area.rect(cx).pos;
-                let Ok(cursor) = self.point_in_lpxs_to_cursor(
-                    Point::new(rel.x as f32, rel.y as f32)
-                ) else {
+                let Ok(cursor) =
+                    self.point_in_lpxs_to_cursor(Point::new(rel.x as f32, rel.y as f32))
+                else {
                     warning!("can't move cursor because layout was invalidated by earlier event");
                     return;
                 };
-                self.set_cursor(
-                    cx,
-                    cursor,
-                    false
-                );
+                self.set_cursor(cx, cursor, false);
                 match tap_count {
                     2 => self.select_word(cx),
                     3 => self.select_all(cx),
@@ -1337,17 +1375,13 @@ impl Widget for TextInput {
                 self.reset_blink_timer(cx);
                 self.set_key_focus(cx);
                 let rel = abs - self.text_area.rect(cx).pos;
-                let Ok(cursor) = self.point_in_lpxs_to_cursor(
-                    Point::new(rel.x as f32, rel.y as f32)
-                ) else {
+                let Ok(cursor) =
+                    self.point_in_lpxs_to_cursor(Point::new(rel.x as f32, rel.y as f32))
+                else {
                     warning!("can't move cursor because layout was invalidated by earlier event");
                     return;
                 };
-                self.set_cursor(
-                    cx,
-                    cursor,
-                    true
-                );
+                self.set_cursor(cx, cursor, true);
                 match tap_count {
                     2 => self.select_word(cx),
                     3 => self.select_all(cx),
@@ -1356,22 +1390,16 @@ impl Widget for TextInput {
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::ReturnKey,
-                modifiers: mods @ KeyModifiers {
-                    shift: false,
-                    ..
-                },
+                modifiers: mods @ KeyModifiers { shift: false, .. },
                 ..
             }) => {
                 cx.hide_text_ime();
                 cx.widget_action(
                     uid,
                     &scope.path,
-                    TextInputAction::Returned(
-                        self.text.clone(),
-                        mods,
-                    ),
+                    TextInputAction::Returned(self.text.clone(), mods),
                 );
-            },
+            }
 
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::Escape,
@@ -1381,10 +1409,7 @@ impl Widget for TextInput {
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::ReturnKey,
-                modifiers: KeyModifiers {
-                    shift: true,
-                    ..
-                },
+                modifiers: KeyModifiers { shift: true, .. },
                 ..
             }) if !self.is_read_only => {
                 self.reset_blink_timer(cx);
@@ -1395,10 +1420,14 @@ impl Widget for TextInput {
                         start: self.selection.start().index,
                         end: self.selection.end().index,
                         replace_with: "\n".to_string(),
-                    }
+                    },
                 );
                 self.draw_bg.redraw(cx);
-                cx.widget_action(uid, &scope.path, TextInputAction::Changed(self.text.clone()));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    TextInputAction::Changed(self.text.clone()),
+                );
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::Backspace,
@@ -1417,10 +1446,14 @@ impl Widget for TextInput {
                         start,
                         end,
                         replace_with: String::new(),
-                    }
+                    },
                 );
                 self.draw_bg.redraw(cx);
-                cx.widget_action(uid, &scope.path, TextInputAction::Changed(self.text.clone()));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    TextInputAction::Changed(self.text.clone()),
+                );
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::Delete,
@@ -1439,38 +1472,44 @@ impl Widget for TextInput {
                         start,
                         end,
                         replace_with: String::new(),
-                    }
+                    },
                 );
                 self.draw_bg.redraw(cx);
-                cx.widget_action(uid, &scope.path, TextInputAction::Changed(self.text.clone()));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    TextInputAction::Changed(self.text.clone()),
+                );
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::KeyZ,
-                modifiers: modifiers @ KeyModifiers {
-                    shift: false,
-                    ..
-                },
+                modifiers: modifiers @ KeyModifiers { shift: false, .. },
                 ..
             }) if modifiers.is_primary() && !self.is_read_only => {
                 if !self.undo(cx) {
                     return;
                 }
                 self.draw_bg.redraw(cx);
-                cx.widget_action(uid, &scope.path, TextInputAction::Changed(self.text.clone()));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    TextInputAction::Changed(self.text.clone()),
+                );
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::KeyZ,
-                modifiers: modifiers @ KeyModifiers {
-                    shift: true,
-                    ..
-                },
+                modifiers: modifiers @ KeyModifiers { shift: true, .. },
                 ..
             }) if modifiers.is_primary() && !self.is_read_only => {
                 if !self.redo(cx) {
                     return;
                 }
                 self.draw_bg.redraw(cx);
-                cx.widget_action(uid, &scope.path, TextInputAction::Changed(self.text.clone()));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    TextInputAction::Changed(self.text.clone()),
+                );
             }
             Hit::TextInput(TextInputEvent {
                 input,
@@ -1482,24 +1521,26 @@ impl Widget for TextInput {
                 if input.is_empty() {
                     return;
                 }
-                self.create_or_extend_edit_group(
-                    if replace_last || was_paste {
-                        EditKind::Other
-                    } else {
-                        EditKind::Insert
-                    }
-                );
+                self.create_or_extend_edit_group(if replace_last || was_paste {
+                    EditKind::Other
+                } else {
+                    EditKind::Insert
+                });
                 self.apply_edit(
                     cx,
                     Edit {
                         start: self.selection.start().index,
                         end: self.selection.end().index,
-                        replace_with: input
-                    }
+                        replace_with: input,
+                    },
                 );
                 self.animator_play(cx, id!(empty.off));
                 self.draw_bg.redraw(cx);
-                cx.widget_action(uid, &scope.path, TextInputAction::Changed(self.text.clone()));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    TextInputAction::Changed(self.text.clone()),
+                );
             }
             Hit::TextCopy(event) => {
                 *event.response.borrow_mut() = Some(self.selected_text().to_string());
@@ -1507,17 +1548,22 @@ impl Widget for TextInput {
             Hit::TextCut(event) => {
                 *event.response.borrow_mut() = Some(self.selected_text().to_string());
                 if !self.selected_text().is_empty() {
-                    self.history.create_or_extend_edit_group(EditKind::Other, self.selection);
+                    self.history
+                        .create_or_extend_edit_group(EditKind::Other, self.selection);
                     self.apply_edit(
                         cx,
                         Edit {
                             start: self.selection.start().index,
                             end: self.selection.end().index,
                             replace_with: String::new(),
-                        }
+                        },
                     );
                     self.draw_bg.redraw(cx);
-                    cx.widget_action(uid, &scope.path, TextInputAction::Changed(self.text.clone()));
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        TextInputAction::Changed(self.text.clone()),
+                    );
                 }
             }
             Hit::KeyDown(event) => {
@@ -1530,133 +1576,126 @@ impl Widget for TextInput {
 
 impl TextInputRef {
     pub fn is_password(&self) -> bool {
-        if let Some(inner) = self.borrow(){
+        if let Some(inner) = self.borrow() {
             inner.is_password()
-        }
-        else{
+        } else {
             false
         }
     }
- 
+
     pub fn set_is_password(&self, cx: &mut Cx, is_password: bool) {
-        if let Some(mut inner) = self.borrow_mut(){
+        if let Some(mut inner) = self.borrow_mut() {
             inner.set_is_password(cx, is_password);
         }
     }
- 
+
     pub fn toggle_is_password(&self, cx: &mut Cx) {
-        if let Some(mut inner) = self.borrow_mut(){
+        if let Some(mut inner) = self.borrow_mut() {
             inner.toggle_is_password(cx);
         }
     }
 
     pub fn is_read_only(&self) -> bool {
-        if let Some(inner) = self.borrow(){
+        if let Some(inner) = self.borrow() {
             inner.is_read_only()
-        }
-        else{
+        } else {
             false
         }
     }
 
     pub fn set_is_read_only(&self, cx: &mut Cx, is_read_only: bool) {
-        if let Some(mut inner) = self.borrow_mut(){
+        if let Some(mut inner) = self.borrow_mut() {
             inner.set_is_read_only(cx, is_read_only);
         }
     }
 
     pub fn toggle_is_read_only(&self, cx: &mut Cx) {
-        if let Some(mut inner) = self.borrow_mut(){
+        if let Some(mut inner) = self.borrow_mut() {
             inner.toggle_is_read_only(cx);
         }
     }
 
     pub fn is_numeric_only(&self) -> bool {
-        if let Some(inner) = self.borrow(){
+        if let Some(inner) = self.borrow() {
             inner.is_numeric_only()
-        }
-        else{
+        } else {
             false
         }
     }
 
     pub fn set_is_numeric_only(&self, cx: &mut Cx, is_numeric_only: bool) {
-        if let Some(mut inner) = self.borrow_mut(){
+        if let Some(mut inner) = self.borrow_mut() {
             inner.set_is_numeric_only(cx, is_numeric_only);
         }
     }
 
     pub fn toggle_is_numeric_only(&self, cx: &mut Cx) {
-        if let Some(mut inner) = self.borrow_mut(){
+        if let Some(mut inner) = self.borrow_mut() {
             inner.toggle_is_numeric_only(cx);
         }
     }
 
     pub fn empty_text(&self) -> String {
-        if let Some(inner) = self.borrow(){
+        if let Some(inner) = self.borrow() {
             inner.empty_text().to_string()
-        }
-        else{
+        } else {
             String::new()
         }
     }
 
     pub fn set_empty_text(&self, cx: &mut Cx, empty_text: String) {
-        if let Some(mut inner) = self.borrow_mut(){
+        if let Some(mut inner) = self.borrow_mut() {
             inner.set_empty_text(cx, empty_text);
         }
     }
 
     pub fn selection(&self) -> Selection {
-        if let Some(inner) = self.borrow(){
+        if let Some(inner) = self.borrow() {
             inner.selection()
-        }
-        else{
+        } else {
             Default::default()
         }
     }
 
     pub fn set_selection(&self, cx: &mut Cx, selection: Selection) {
-        if let Some(mut inner) = self.borrow_mut(){
+        if let Some(mut inner) = self.borrow_mut() {
             inner.set_selection(cx, selection);
         }
     }
 
     pub fn cursor(&self) -> Cursor {
-        if let Some(inner) = self.borrow(){
+        if let Some(inner) = self.borrow() {
             inner.cursor()
-        }
-        else{
+        } else {
             Default::default()
         }
     }
 
     pub fn set_cursor(&self, cx: &mut Cx, cursor: Cursor, keep_selection: bool) {
-        if let Some(mut inner) = self.borrow_mut(){
+        if let Some(mut inner) = self.borrow_mut() {
             inner.set_cursor(cx, cursor, keep_selection);
         }
     }
 
     pub fn selected_text(&self) -> String {
-        if let Some(inner) = self.borrow(){
+        if let Some(inner) = self.borrow() {
             inner.selected_text().to_string()
-        }
-        else{
+        } else {
             String::new()
         }
     }
 
     pub fn returned(&self, actions: &Actions) -> Option<(String, KeyModifiers)> {
-        for action in actions.filter_widget_actions_cast::<TextInputAction>(self.widget_uid()){
+        for action in actions.filter_widget_actions_cast::<TextInputAction>(self.widget_uid()) {
             if let TextInputAction::Returned(text, modifiers) = action {
                 return Some((text, modifiers));
             }
         }
         None
     }
-    
+
     pub fn escaped(&self, actions: &Actions) -> bool {
-        for action in actions.filter_widget_actions_cast::<TextInputAction>(self.widget_uid()){
+        for action in actions.filter_widget_actions_cast::<TextInputAction>(self.widget_uid()) {
             if let TextInputAction::Escaped = action {
                 return true;
             }
@@ -1665,8 +1704,8 @@ impl TextInputRef {
     }
 
     pub fn changed(&self, actions: &Actions) -> Option<String> {
-        for action in actions.filter_widget_actions_cast::<TextInputAction>(self.widget_uid()){
-            if let TextInputAction::Changed(text) = action{
+        for action in actions.filter_widget_actions_cast::<TextInputAction>(self.widget_uid()) {
+            if let TextInputAction::Changed(text) = action {
                 return Some(text);
             }
         }
@@ -1674,8 +1713,8 @@ impl TextInputRef {
     }
 
     pub fn key_down_unhandled(&self, actions: &Actions) -> Option<KeyEvent> {
-        for action in actions.filter_widget_actions_cast::<TextInputAction>(self.widget_uid()){
-            if let TextInputAction::KeyDownUnhandled(event) = action{
+        for action in actions.filter_widget_actions_cast::<TextInputAction>(self.widget_uid()) {
+            if let TextInputAction::KeyDownUnhandled(event) = action {
                 return Some(event);
             }
         }
@@ -1742,7 +1781,9 @@ impl History {
     }
 
     fn create_or_extend_edit_group(&mut self, edit_kind: EditKind, selection: Selection) {
-        if !self.current_edit_kind.map_or(false, |current_edit_kind| current_edit_kind.can_merge_with(edit_kind)) {
+        if !self.current_edit_kind.map_or(false, |current_edit_kind| {
+            current_edit_kind.can_merge_with(edit_kind)
+        }) {
             self.undo_stack.push_edit_group(selection);
             self.current_edit_kind = Some(edit_kind);
         }
@@ -1755,11 +1796,7 @@ impl History {
         self.redo_stack.clear();
     }
 
-    fn undo(
-        &mut self,
-        selection: Selection,
-        text: &mut String,
-    ) -> Option<Selection> {
+    fn undo(&mut self, selection: Selection, text: &mut String) -> Option<Selection> {
         if let Some((new_selection, edits)) = self.undo_stack.pop_edit_group() {
             self.redo_stack.push_edit_group(selection);
             for edit in &edits {
@@ -1774,11 +1811,7 @@ impl History {
         }
     }
 
-    fn redo(
-        &mut self,
-        selection: Selection,
-        text: &mut String,
-    ) -> Option<Selection> {
+    fn redo(&mut self, selection: Selection, text: &mut String) -> Option<Selection> {
         if let Some((new_selection, edits)) = self.redo_stack.pop_edit_group() {
             self.undo_stack.push_edit_group(selection);
             for edit in &edits {
@@ -1831,21 +1864,21 @@ impl EditStack {
             edit_start: self.edits.len(),
         });
     }
-    
+
     fn push_edit(&mut self, edit: Edit) {
         self.edits.push(edit);
     }
-    
+
     fn pop_edit_group(&mut self) -> Option<(Selection, Vec<Edit>)> {
         match self.edit_groups.pop() {
             Some(edit_group) => Some((
                 edit_group.selection,
-                self.edits.drain(edit_group.edit_start..).rev().collect()
+                self.edits.drain(edit_group.edit_start..).rev().collect(),
             )),
             None => None,
         }
     }
-    
+
     fn clear(&mut self) {
         self.edit_groups.clear();
         self.edits.clear();
@@ -1855,7 +1888,7 @@ impl EditStack {
 #[derive(Clone, Copy, Debug)]
 struct EditGroup {
     selection: Selection,
-    edit_start: usize
+    edit_start: usize,
 }
 
 #[derive(Clone, Debug)]

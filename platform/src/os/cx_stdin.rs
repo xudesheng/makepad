@@ -12,8 +12,7 @@ use {
         makepad_micro_serde::*,
         window::WindowId,
     },
-    std::cell::Cell,
-    std::collections::HashMap,
+    std::{cell::Cell, collections::HashMap, convert::TryInto, str::Chars},
 };
 
 // HACK(eddyb) more or less `<[T; N]>::each_ref`, which is still unstable.
@@ -42,16 +41,150 @@ pub const SWAPCHAIN_IMAGE_COUNT: usize = match () {
 ///
 /// Certain configurations of swapchains often have older/more specific names,
 /// e.g. "double buffering" for `SWAPCHAIN_IMAGE_COUNT == 2` (or "triple" etc.).
-#[derive(Copy, Clone, Debug, PartialEq, SerBin, DeBin, SerJson, DeJson)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Swapchain<I>
-// HACK(eddyb) hint `{Ser,De}{Bin,Json}` derivers to add their own bounds.
 where
-    I: Sized
+    I: Sized,
 {
     pub window_id: usize,
     pub alloc_width: u32,
     pub alloc_height: u32,
     pub presentable_images: [PresentableImage<I>; SWAPCHAIN_IMAGE_COUNT],
+}
+
+impl<I> SerBin for Swapchain<I>
+where
+    I: SerBin,
+{
+    fn ser_bin(&self, s: &mut Vec<u8>) {
+        self.window_id.ser_bin(s);
+        self.alloc_width.ser_bin(s);
+        self.alloc_height.ser_bin(s);
+        for image in &self.presentable_images {
+            image.ser_bin(s);
+        }
+    }
+}
+
+impl<I> DeBin for Swapchain<I>
+where
+    I: DeBin,
+{
+    fn de_bin(o: &mut usize, d: &[u8]) -> Result<Self, DeBinErr> {
+        let window_id = usize::de_bin(o, d)?;
+        let alloc_width = u32::de_bin(o, d)?;
+        let alloc_height = u32::de_bin(o, d)?;
+        let mut images = Vec::with_capacity(SWAPCHAIN_IMAGE_COUNT);
+        for _ in 0..SWAPCHAIN_IMAGE_COUNT {
+            images.push(PresentableImage::<I>::de_bin(o, d)?);
+        }
+        let presentable_images: [PresentableImage<I>; SWAPCHAIN_IMAGE_COUNT] =
+            images.try_into().map_err(|_| DeBinErr {
+                msg: "presentable_images".to_string(),
+                o: *o,
+                l: 0,
+                s: d.len(),
+            })?;
+        Ok(Self {
+            window_id,
+            alloc_width,
+            alloc_height,
+            presentable_images,
+        })
+    }
+}
+
+impl<I> SerJson for Swapchain<I>
+where
+    I: SerJson,
+{
+    fn ser_json(&self, d: usize, s: &mut SerJsonState) {
+        s.st_pre();
+        s.field(d + 1, "window_id");
+        self.window_id.ser_json(d + 1, s);
+        s.conl();
+        s.field(d + 1, "alloc_width");
+        self.alloc_width.ser_json(d + 1, s);
+        s.conl();
+        s.field(d + 1, "alloc_height");
+        self.alloc_height.ser_json(d + 1, s);
+        s.conl();
+        s.field(d + 1, "presentable_images");
+        s.out.push('[');
+        for (index, image) in self.presentable_images.iter().enumerate() {
+            image.ser_json(d + 1, s);
+            if index + 1 != SWAPCHAIN_IMAGE_COUNT {
+                s.out.push(',');
+            }
+        }
+        s.out.push(']');
+        s.st_post(d);
+    }
+}
+
+impl<I> DeJson for Swapchain<I>
+where
+    I: DeJson,
+{
+    fn de_json(state: &mut DeJsonState, chars: &mut Chars) -> Result<Self, DeJsonErr> {
+        if !matches!(state.tok, DeJsonTok::CurlyOpen) {
+            return Err(state.err_token("{"));
+        }
+        state.next_tok(chars)?;
+
+        let mut window_id = None;
+        let mut alloc_width = None;
+        let mut alloc_height = None;
+        let mut presentable_images: Option<[PresentableImage<I>; SWAPCHAIN_IMAGE_COUNT]> = None;
+
+        loop {
+            match state.tok {
+                DeJsonTok::CurlyClose => {
+                    state.next_tok(chars)?;
+                    break;
+                }
+                DeJsonTok::Str => {
+                    let field = state.as_string()?;
+                    state.next_tok(chars)?;
+                    if !matches!(state.tok, DeJsonTok::Colon) {
+                        return Err(state.err_token(":"));
+                    }
+                    state.next_tok(chars)?;
+                    match field.as_str() {
+                        "window_id" => {
+                            window_id = Some(usize::de_json(state, chars)?);
+                        }
+                        "alloc_width" => {
+                            alloc_width = Some(u32::de_json(state, chars)?);
+                        }
+                        "alloc_height" => {
+                            alloc_height = Some(u32::de_json(state, chars)?);
+                        }
+                        "presentable_images" => {
+                            let vec = Vec::<PresentableImage<I>>::de_json(state, chars)?;
+                            presentable_images = Some(
+                                vec.try_into()
+                                    .map_err(|_| state.err_range("presentable_images"))?,
+                            );
+                        }
+                        other => return Err(state.err_exp(other)),
+                    }
+                    if matches!(state.tok, DeJsonTok::Comma) {
+                        state.next_tok(chars)?;
+                    }
+                }
+                _ => return Err(state.err_token("struct field")),
+            }
+        }
+
+        Ok(Self {
+            window_id: window_id.ok_or_else(|| state.err_nf("window_id"))?,
+            alloc_width: alloc_width.ok_or_else(|| state.err_nf("alloc_width"))?,
+            alloc_height: alloc_height.ok_or_else(|| state.err_nf("alloc_height"))?,
+            presentable_images: presentable_images
+                .ok_or_else(|| state.err_nf("presentable_images"))?,
+        })
+    }
 }
 
 impl Swapchain<()> {
@@ -110,14 +243,100 @@ impl<I> Swapchain<I> {
 }
 
 /// One of the "presentable images" of a [`SharedSwapchain`].
-#[derive(Copy, Clone, Debug, PartialEq, SerBin, DeBin, SerJson, DeJson)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct PresentableImage<I>
-// HACK(eddyb) hint `{Ser,De}{Bin,Json}` derivers to add their own bounds.
 where
-    I: Sized
+    I: Sized,
 {
     pub id: PresentableImageId,
     pub image: I,
+}
+
+impl<I> SerBin for PresentableImage<I>
+where
+    I: SerBin,
+{
+    fn ser_bin(&self, s: &mut Vec<u8>) {
+        self.id.ser_bin(s);
+        self.image.ser_bin(s);
+    }
+}
+
+impl<I> DeBin for PresentableImage<I>
+where
+    I: DeBin,
+{
+    fn de_bin(o: &mut usize, d: &[u8]) -> Result<Self, DeBinErr> {
+        Ok(Self {
+            id: PresentableImageId::de_bin(o, d)?,
+            image: I::de_bin(o, d)?,
+        })
+    }
+}
+
+impl<I> SerJson for PresentableImage<I>
+where
+    I: SerJson,
+{
+    fn ser_json(&self, d: usize, s: &mut SerJsonState) {
+        s.st_pre();
+        s.field(d + 1, "id");
+        self.id.ser_json(d + 1, s);
+        s.conl();
+        s.field(d + 1, "image");
+        self.image.ser_json(d + 1, s);
+        s.st_post(d);
+    }
+}
+
+impl<I> DeJson for PresentableImage<I>
+where
+    I: DeJson,
+{
+    fn de_json(state: &mut DeJsonState, chars: &mut Chars) -> Result<Self, DeJsonErr> {
+        if !matches!(state.tok, DeJsonTok::CurlyOpen) {
+            return Err(state.err_token("{"));
+        }
+        state.next_tok(chars)?;
+
+        let mut id = None;
+        let mut image = None;
+
+        loop {
+            match state.tok {
+                DeJsonTok::CurlyClose => {
+                    state.next_tok(chars)?;
+                    break;
+                }
+                DeJsonTok::Str => {
+                    let field = state.as_string()?;
+                    state.next_tok(chars)?;
+                    if !matches!(state.tok, DeJsonTok::Colon) {
+                        return Err(state.err_token(":"));
+                    }
+                    state.next_tok(chars)?;
+                    match field.as_str() {
+                        "id" => {
+                            id = Some(PresentableImageId::de_json(state, chars)?);
+                        }
+                        "image" => {
+                            image = Some(I::de_json(state, chars)?);
+                        }
+                        other => return Err(state.err_exp(other)),
+                    }
+                    if matches!(state.tok, DeJsonTok::Comma) {
+                        state.next_tok(chars)?;
+                    }
+                }
+                _ => return Err(state.err_token("struct field")),
+            }
+        }
+
+        Ok(Self {
+            id: id.ok_or_else(|| state.err_nf("id"))?,
+            image: image.ok_or_else(|| state.err_nf("image"))?,
+        })
+    }
 }
 
 /// Cross-process-unique (on best-effort) ID of a [`SharedPresentableImage`],

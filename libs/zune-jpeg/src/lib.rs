@@ -105,19 +105,18 @@ extern crate alloc;
 extern crate core;
 //#[macro_use]
 //extern crate log;
-macro_rules!trace {
-    ( $ ( $ t: tt) *) => {}
+macro_rules! trace {
+    ( $ ( $ t: tt) *) => {};
 }
-macro_rules!warn {
-    ( $ ( $ t: tt) *) => {}
+macro_rules! warn {
+    ( $ ( $ t: tt) *) => {};
 }
-macro_rules!error {
-    ( $ ( $ t: tt) *) => {}
+macro_rules! error {
+    ( $ ( $ t: tt) *) => {};
 }
-macro_rules!debug {
-    ( $ ( $ t: tt) *) => {}
+macro_rules! debug {
+    ( $ ( $ t: tt) *) => {};
 }
-
 
 pub use makepad_zune_core;
 

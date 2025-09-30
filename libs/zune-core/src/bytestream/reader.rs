@@ -29,15 +29,15 @@ const ERROR_MSG: &str = "No more bytes";
 /// [`has`]: Self::has
 pub struct ZByteReader<T: ZReaderTrait> {
     /// Data stream
-    stream:   T,
-    position: usize
+    stream: T,
+    position: usize,
 }
 
 enum Mode {
     // Big endian
     BE,
     // Little Endian
-    LE
+    LE,
 }
 
 impl<T: ZReaderTrait> ZByteReader<T> {
@@ -52,8 +52,8 @@ impl<T: ZReaderTrait> ZByteReader<T> {
     /// A byte reader which will pull bits from bye
     pub const fn new(buf: T) -> ZByteReader<T> {
         ZByteReader {
-            stream:   buf,
-            position: 0
+            stream: buf,
+            position: 0,
         }
     }
     /// Skip `num` bytes ahead of the stream.
@@ -162,7 +162,7 @@ impl<T: ZReaderTrait> ZByteReader<T> {
                 self.position += num;
                 Ok(bytes)
             }
-            None => Err(ERROR_MSG)
+            None => Err(ERROR_MSG),
         }
     }
     /// Look ahead position bytes and return a reference
@@ -178,7 +178,7 @@ impl<T: ZReaderTrait> ZByteReader<T> {
 
         match self.stream.get_slice(start..end) {
             Some(bytes) => Ok(bytes),
-            None => Err(ERROR_MSG)
+            None => Err(ERROR_MSG),
         }
     }
     /// Get a fixed amount of bytes or return an error if we cant
@@ -212,7 +212,7 @@ impl<T: ZReaderTrait> ZByteReader<T> {
 
                 Ok(byte_store)
             }
-            None => Err(ERROR_MSG)
+            None => Err(ERROR_MSG),
         }
     }
 
@@ -245,7 +245,7 @@ impl<T: ZReaderTrait> ZByteReader<T> {
 
                 byte_store
             }
-            None => byte_store
+            None => byte_store,
         }
     }
     #[inline]
@@ -397,7 +397,7 @@ macro_rules! get_single_type {
 // we can make some functions leaner like get_u8 is branchless
 impl<T> ZByteReader<T>
 where
-    T: ZReaderTrait
+    T: ZReaderTrait,
 {
     /// Retrieve a byte from the underlying stream
     /// returning 0 if there are no more bytes available
@@ -429,7 +429,7 @@ where
                 self.position += 1;
                 Ok(*byte)
             }
-            None => Err(ERROR_MSG)
+            None => Err(ERROR_MSG),
         }
     }
 }

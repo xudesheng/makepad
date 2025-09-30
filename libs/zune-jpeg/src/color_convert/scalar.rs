@@ -21,7 +21,11 @@ fn clamp(a: i16) -> u8 {
 ///
 /// Converts to BGR if const BGRA is true
 pub fn ycbcr_to_rgba_inner_16_scalar<const BGRA: bool>(
-    y: &[i16; 16], cb: &[i16; 16], cr: &[i16; 16], output: &mut [u8], pos: &mut usize
+    y: &[i16; 16],
+    cb: &[i16; 16],
+    cr: &[i16; 16],
+    output: &mut [u8],
+    pos: &mut usize,
 ) {
     let (_, output_position) = output.split_at_mut(*pos);
 
@@ -64,7 +68,11 @@ pub fn ycbcr_to_rgba_inner_16_scalar<const BGRA: bool>(
 ///
 /// Converts to BGR if const BGRA is true
 pub fn ycbcr_to_rgb_inner_16_scalar<const BGRA: bool>(
-    y: &[i16; 16], cb: &[i16; 16], cr: &[i16; 16], output: &mut [u8], pos: &mut usize
+    y: &[i16; 16],
+    cb: &[i16; 16],
+    cr: &[i16; 16],
+    output: &mut [u8],
+    pos: &mut usize,
 ) {
     let (_, output_position) = output.split_at_mut(*pos);
 

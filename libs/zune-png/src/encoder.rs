@@ -16,18 +16,18 @@ use crate::decoder::PngChunk;
 use crate::enums::{FilterMethod, PngChunkType};
 use crate::filters::{choose_compression_filter, filter_scanline};
 use crate::headers::writers::{
-    write_chunk, write_exif, write_gamma, write_header_fn, write_iend, write_ihdr
+    write_chunk, write_exif, write_gamma, write_header_fn, write_iend, write_ihdr,
 };
 
 #[derive(Default)]
 pub struct PngEncoder<'a> {
-    pub(crate) options:         EncoderOptions,
-    pub(crate) data:            &'a [u8],
-    pub(crate) row_filter:      FilterMethod,
-    pub(crate) encoded_chunks:  Vec<u8>,
+    pub(crate) options: EncoderOptions,
+    pub(crate) data: &'a [u8],
+    pub(crate) row_filter: FilterMethod,
+    pub(crate) encoded_chunks: Vec<u8>,
     pub(crate) filter_scanline: Vec<u8>,
-    pub(crate) gamma:           Option<f32>,
-    pub(crate) exif:            Option<&'a [u8]>
+    pub(crate) gamma: Option<f32>,
+    pub(crate) exif: Option<&'a [u8]>,
 }
 
 impl<'a> PngEncoder<'a> {
@@ -160,7 +160,7 @@ impl<'a> PngEncoder<'a> {
                 previous_scanline,
                 filter_s,
                 filter,
-                components
+                components,
             );
         }
         // encode filtered scanline
@@ -173,10 +173,10 @@ impl<'a> PngEncoder<'a> {
         // so let's try emulating that
         for chunk in self.encoded_chunks.chunks(8192) {
             let chunk_type = PngChunk {
-                length:     chunk.len(),
+                length: chunk.len(),
                 chunk_type: PngChunkType::IDAT, // not needed
-                chunk:      *b"IDAT",
-                crc:        0 // not needed
+                chunk: *b"IDAT",
+                crc: 0, // not needed
             };
             write_chunk(chunk_type, chunk, writer);
         }

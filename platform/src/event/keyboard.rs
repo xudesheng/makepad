@@ -1,36 +1,27 @@
 use {
-    std::rc::Rc,
-    std::cell::RefCell,
     crate::{
-        makepad_live_compiler::*,
-        live_traits::*,
-        makepad_derive_live::*,
-        makepad_micro_serde::*,
-        cx::Cx,
-        event::{
-            finger::KeyModifiers,
-        },
-        area::Area,
+        area::Area, cx::Cx, event::finger::KeyModifiers, live_traits::*, makepad_derive_live::*,
+        makepad_live_compiler::*, makepad_micro_serde::*,
     },
+    std::cell::RefCell,
+    std::rc::Rc,
 };
-
 
 #[derive(Default)]
 pub struct CxKeyboard {
-    pub (crate) prev_key_focus: Area,
-    pub (crate) next_key_focus: Area,
-    pub (crate) key_focus: Area,
+    pub(crate) prev_key_focus: Area,
+    pub(crate) next_key_focus: Area,
+    pub(crate) key_focus: Area,
     #[allow(dead_code)]
-    pub (crate) keys_down: Vec<KeyEvent>,
-    pub (crate) text_ime_dismissed: bool
+    pub(crate) keys_down: Vec<KeyEvent>,
+    pub(crate) text_ime_dismissed: bool,
 }
 
 impl CxKeyboard {
-    pub fn modifiers(&self)->KeyModifiers{
-        if let Some(key) = self.keys_down.first(){
+    pub fn modifiers(&self) -> KeyModifiers {
+        if let Some(key) = self.keys_down.first() {
             key.modifiers
-        }
-        else{
+        } else {
             Default::default()
         }
     }
@@ -56,7 +47,7 @@ impl CxKeyboard {
         self.text_ime_dismissed = false;
     }
 
-    pub (crate) fn update_area(&mut self, old_area: Area, new_area: Area) {
+    pub(crate) fn update_area(&mut self, old_area: Area, new_area: Area) {
         if self.key_focus == old_area {
             self.key_focus = new_area
         }
@@ -74,34 +65,42 @@ impl CxKeyboard {
         keys_down
     }*/
 
-    pub (crate) fn cycle_key_focus_changed(&mut self) -> Option<(Area, Area)> {
+    pub(crate) fn cycle_key_focus_changed(&mut self) -> Option<(Area, Area)> {
         if self.next_key_focus != self.key_focus {
             self.prev_key_focus = self.key_focus;
             self.key_focus = self.next_key_focus;
-            return Some((self.prev_key_focus, self.key_focus))
+            return Some((self.prev_key_focus, self.key_focus));
         }
         None
     }
-    
+
     #[allow(dead_code)]
-    pub fn is_key_down(&mut self, key_code: KeyCode)->bool{
-        if let Some(_) = self.keys_down.iter().position( | k | k.key_code == key_code) {
+    pub fn is_key_down(&mut self, key_code: KeyCode) -> bool {
+        if let Some(_) = self.keys_down.iter().position(|k| k.key_code == key_code) {
             return true;
         }
-        return false
+        return false;
     }
 
     #[allow(dead_code)]
-    pub (crate) fn process_key_down(&mut self, key_event: KeyEvent) {
-        if let Some(_) = self.keys_down.iter().position( | k | k.key_code == key_event.key_code) {
+    pub(crate) fn process_key_down(&mut self, key_event: KeyEvent) {
+        if let Some(_) = self
+            .keys_down
+            .iter()
+            .position(|k| k.key_code == key_event.key_code)
+        {
             return;
         }
         self.keys_down.push(key_event);
     }
 
     #[allow(dead_code)]
-    pub (crate) fn process_key_up(&mut self, key_event: KeyEvent) {
-        if let Some(pos) = self.keys_down.iter().position( | k | k.key_code == key_event.key_code) {
+    pub(crate) fn process_key_up(&mut self, key_event: KeyEvent) {
+        if let Some(pos) = self
+            .keys_down
+            .iter()
+            .position(|k| k.key_code == key_event.key_code)
+        {
             self.keys_down.remove(pos);
         }
     }
@@ -112,7 +111,7 @@ pub struct KeyEvent {
     pub key_code: KeyCode,
     pub is_repeat: bool,
     pub modifiers: KeyModifiers,
-    pub time: f64
+    pub time: f64,
 }
 
 #[derive(Clone, Debug)]
@@ -125,23 +124,25 @@ pub struct KeyFocusEvent {
 pub struct TextInputEvent {
     pub input: String,
     pub replace_last: bool,
-    pub was_paste: bool
+    pub was_paste: bool,
 }
 
 #[derive(Clone, Debug)]
 pub struct TextClipboardEvent {
-    pub response: Rc<RefCell<Option<String>>>
+    pub response: Rc<RefCell<Option<String>>>,
 }
 
 impl Default for KeyCode {
-    fn default() -> Self {KeyCode::Unknown}
+    fn default() -> Self {
+        KeyCode::Unknown
+    }
 }
-
 
 // lowest common denominator keymap between desktop and web
 #[derive(Live, LiveHook, Clone, Copy, Debug, SerBin, DeBin, SerJson, DeJson, Eq, PartialEq)]
 pub enum KeyCode {
-    #[pick] Escape,
+    #[pick]
+    Escape,
 
     Back,
 
@@ -259,62 +260,338 @@ pub enum KeyCode {
     Unknown,
 }
 
-impl KeyCode{
-    pub fn is_unknown(&self)->bool{
-        match self{
-            Self::Unknown=>true,
-            _=>false
+impl KeyCode {
+    pub fn is_unknown(&self) -> bool {
+        match self {
+            Self::Unknown => true,
+            _ => false,
         }
     }
-    pub fn to_char(&self, uc:bool)->Option<char>{
+    pub fn to_char(&self, uc: bool) -> Option<char> {
         match self {
-            KeyCode::KeyA => if uc {Some('A')}else {Some('a')},
-            KeyCode::KeyB => if uc {Some('B')}else {Some('b')},
-            KeyCode::KeyC => if uc {Some('C')}else {Some('c')},
-            KeyCode::KeyD => if uc {Some('D')}else {Some('d')},
-            KeyCode::KeyE => if uc {Some('E')}else {Some('e')},
-            KeyCode::KeyF => if uc {Some('F')}else {Some('f')},
-            KeyCode::KeyG => if uc {Some('G')}else {Some('g')},
-            KeyCode::KeyH => if uc {Some('H')}else {Some('h')},
-            KeyCode::KeyI => if uc {Some('I')}else {Some('i')},
-            KeyCode::KeyJ => if uc {Some('J')}else {Some('j')},
-            KeyCode::KeyK => if uc {Some('K')}else {Some('k')},
-            KeyCode::KeyL => if uc {Some('L')}else {Some('l')},
-            KeyCode::KeyM => if uc {Some('M')}else {Some('m')},
-            KeyCode::KeyN => if uc {Some('N')}else {Some('n')},
-            KeyCode::KeyO => if uc {Some('O')}else {Some('o')},
-            KeyCode::KeyP => if uc {Some('P')}else {Some('p')},
-            KeyCode::KeyQ => if uc {Some('Q')}else {Some('q')},
-            KeyCode::KeyR => if uc {Some('R')}else {Some('r')},
-            KeyCode::KeyS => if uc {Some('S')}else {Some('s')},
-            KeyCode::KeyT => if uc {Some('T')}else {Some('t')},
-            KeyCode::KeyU => if uc {Some('U')}else {Some('u')},
-            KeyCode::KeyV => if uc {Some('V')}else {Some('v')},
-            KeyCode::KeyW => if uc {Some('W')}else {Some('w')},
-            KeyCode::KeyX => if uc {Some('X')}else {Some('x')},
-            KeyCode::KeyY => if uc {Some('Y')}else {Some('y')},
-            KeyCode::KeyZ => if uc {Some('Z')}else {Some('z')},
-            KeyCode::Key0 => if uc {Some(')')}else {Some('0')},
-            KeyCode::Key1 => if uc {Some('!')}else {Some('1')},
-            KeyCode::Key2 => if uc {Some('@')}else {Some('2')},
-            KeyCode::Key3 => if uc {Some('#')}else {Some('3')},
-            KeyCode::Key4 => if uc {Some('$')}else {Some('4')},
-            KeyCode::Key5 => if uc {Some('%')}else {Some('5')},
-            KeyCode::Key6 => if uc {Some('^')}else {Some('6')},
-            KeyCode::Key7 => if uc {Some('&')}else {Some('7')},
-            KeyCode::Key8 => if uc {Some('*')}else {Some('8')},
-            KeyCode::Key9 => if uc {Some('(')}else {Some('9')},
-            KeyCode::Equals => if uc {Some('+')}else {Some('=')},
-            KeyCode::Minus => if uc {Some('_')}else {Some('-')},
-            KeyCode::RBracket => if uc {Some('{')}else {Some('[')},
-            KeyCode::LBracket => if uc {Some('}')}else {Some(']')},
+            KeyCode::KeyA => {
+                if uc {
+                    Some('A')
+                } else {
+                    Some('a')
+                }
+            }
+            KeyCode::KeyB => {
+                if uc {
+                    Some('B')
+                } else {
+                    Some('b')
+                }
+            }
+            KeyCode::KeyC => {
+                if uc {
+                    Some('C')
+                } else {
+                    Some('c')
+                }
+            }
+            KeyCode::KeyD => {
+                if uc {
+                    Some('D')
+                } else {
+                    Some('d')
+                }
+            }
+            KeyCode::KeyE => {
+                if uc {
+                    Some('E')
+                } else {
+                    Some('e')
+                }
+            }
+            KeyCode::KeyF => {
+                if uc {
+                    Some('F')
+                } else {
+                    Some('f')
+                }
+            }
+            KeyCode::KeyG => {
+                if uc {
+                    Some('G')
+                } else {
+                    Some('g')
+                }
+            }
+            KeyCode::KeyH => {
+                if uc {
+                    Some('H')
+                } else {
+                    Some('h')
+                }
+            }
+            KeyCode::KeyI => {
+                if uc {
+                    Some('I')
+                } else {
+                    Some('i')
+                }
+            }
+            KeyCode::KeyJ => {
+                if uc {
+                    Some('J')
+                } else {
+                    Some('j')
+                }
+            }
+            KeyCode::KeyK => {
+                if uc {
+                    Some('K')
+                } else {
+                    Some('k')
+                }
+            }
+            KeyCode::KeyL => {
+                if uc {
+                    Some('L')
+                } else {
+                    Some('l')
+                }
+            }
+            KeyCode::KeyM => {
+                if uc {
+                    Some('M')
+                } else {
+                    Some('m')
+                }
+            }
+            KeyCode::KeyN => {
+                if uc {
+                    Some('N')
+                } else {
+                    Some('n')
+                }
+            }
+            KeyCode::KeyO => {
+                if uc {
+                    Some('O')
+                } else {
+                    Some('o')
+                }
+            }
+            KeyCode::KeyP => {
+                if uc {
+                    Some('P')
+                } else {
+                    Some('p')
+                }
+            }
+            KeyCode::KeyQ => {
+                if uc {
+                    Some('Q')
+                } else {
+                    Some('q')
+                }
+            }
+            KeyCode::KeyR => {
+                if uc {
+                    Some('R')
+                } else {
+                    Some('r')
+                }
+            }
+            KeyCode::KeyS => {
+                if uc {
+                    Some('S')
+                } else {
+                    Some('s')
+                }
+            }
+            KeyCode::KeyT => {
+                if uc {
+                    Some('T')
+                } else {
+                    Some('t')
+                }
+            }
+            KeyCode::KeyU => {
+                if uc {
+                    Some('U')
+                } else {
+                    Some('u')
+                }
+            }
+            KeyCode::KeyV => {
+                if uc {
+                    Some('V')
+                } else {
+                    Some('v')
+                }
+            }
+            KeyCode::KeyW => {
+                if uc {
+                    Some('W')
+                } else {
+                    Some('w')
+                }
+            }
+            KeyCode::KeyX => {
+                if uc {
+                    Some('X')
+                } else {
+                    Some('x')
+                }
+            }
+            KeyCode::KeyY => {
+                if uc {
+                    Some('Y')
+                } else {
+                    Some('y')
+                }
+            }
+            KeyCode::KeyZ => {
+                if uc {
+                    Some('Z')
+                } else {
+                    Some('z')
+                }
+            }
+            KeyCode::Key0 => {
+                if uc {
+                    Some(')')
+                } else {
+                    Some('0')
+                }
+            }
+            KeyCode::Key1 => {
+                if uc {
+                    Some('!')
+                } else {
+                    Some('1')
+                }
+            }
+            KeyCode::Key2 => {
+                if uc {
+                    Some('@')
+                } else {
+                    Some('2')
+                }
+            }
+            KeyCode::Key3 => {
+                if uc {
+                    Some('#')
+                } else {
+                    Some('3')
+                }
+            }
+            KeyCode::Key4 => {
+                if uc {
+                    Some('$')
+                } else {
+                    Some('4')
+                }
+            }
+            KeyCode::Key5 => {
+                if uc {
+                    Some('%')
+                } else {
+                    Some('5')
+                }
+            }
+            KeyCode::Key6 => {
+                if uc {
+                    Some('^')
+                } else {
+                    Some('6')
+                }
+            }
+            KeyCode::Key7 => {
+                if uc {
+                    Some('&')
+                } else {
+                    Some('7')
+                }
+            }
+            KeyCode::Key8 => {
+                if uc {
+                    Some('*')
+                } else {
+                    Some('8')
+                }
+            }
+            KeyCode::Key9 => {
+                if uc {
+                    Some('(')
+                } else {
+                    Some('9')
+                }
+            }
+            KeyCode::Equals => {
+                if uc {
+                    Some('+')
+                } else {
+                    Some('=')
+                }
+            }
+            KeyCode::Minus => {
+                if uc {
+                    Some('_')
+                } else {
+                    Some('-')
+                }
+            }
+            KeyCode::RBracket => {
+                if uc {
+                    Some('{')
+                } else {
+                    Some('[')
+                }
+            }
+            KeyCode::LBracket => {
+                if uc {
+                    Some('}')
+                } else {
+                    Some(']')
+                }
+            }
             KeyCode::ReturnKey => Some('\n'),
-            KeyCode::Backtick => if uc {Some('~')}else {Some('`')},
-            KeyCode::Semicolon => if uc {Some(':')}else {Some(';')},
-            KeyCode::Backslash => if uc {Some('|')}else {Some('\\')},
-            KeyCode::Comma => if uc {Some('<')}else {Some(',')},
-            KeyCode::Slash => if uc {Some('?')}else {Some('/')},
-            KeyCode::Period => if uc {Some('>')}else {Some('.')},
+            KeyCode::Backtick => {
+                if uc {
+                    Some('~')
+                } else {
+                    Some('`')
+                }
+            }
+            KeyCode::Semicolon => {
+                if uc {
+                    Some(':')
+                } else {
+                    Some(';')
+                }
+            }
+            KeyCode::Backslash => {
+                if uc {
+                    Some('|')
+                } else {
+                    Some('\\')
+                }
+            }
+            KeyCode::Comma => {
+                if uc {
+                    Some('<')
+                } else {
+                    Some(',')
+                }
+            }
+            KeyCode::Slash => {
+                if uc {
+                    Some('?')
+                } else {
+                    Some('/')
+                }
+            }
+            KeyCode::Period => {
+                if uc {
+                    Some('>')
+                } else {
+                    Some('.')
+                }
+            }
             KeyCode::Tab => Some('\t'),
             KeyCode::Space => Some(' '),
             KeyCode::NumpadDecimal => Some('.'),
@@ -333,7 +610,7 @@ impl KeyCode{
             KeyCode::Numpad7 => Some('7'),
             KeyCode::Numpad8 => Some('8'),
             KeyCode::Numpad9 => Some('9'),
-            _ => None
+            _ => None,
         }
     }
 }

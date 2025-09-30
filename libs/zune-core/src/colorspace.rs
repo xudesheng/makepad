@@ -32,7 +32,7 @@ pub enum ColorSpace {
     /// Blue, Green, Red, Alpha
     BGRA,
     /// The colorspace is unknown
-    Unknown
+    Unknown,
 }
 
 impl ColorSpace {
@@ -42,7 +42,7 @@ impl ColorSpace {
             Self::RGBA | Self::YCCK | Self::CMYK | Self::BGRA => 4,
             Self::Luma => 1,
             Self::LumaA => 2,
-            Self::Unknown => 0
+            Self::Unknown => 0,
         }
     }
 
@@ -66,7 +66,7 @@ pub static ALL_COLORSPACES: [ColorSpace; 9] = [
     ColorSpace::BGRA,
     ColorSpace::BGR,
     ColorSpace::YCCK,
-    ColorSpace::YCbCr
+    ColorSpace::YCbCr,
 ];
 
 /// Color characteristics
@@ -85,5 +85,5 @@ pub enum ColorCharacteristics {
     sRGB,
     /// Linear transfer characteristics
     /// The image is in linear colorspace
-    Linear
+    Linear,
 }

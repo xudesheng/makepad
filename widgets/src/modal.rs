@@ -3,28 +3,28 @@ use crate::{
     makepad_draw::*,
     makepad_platform::{KeyCode, KeyEvent},
     view::*,
-    widget::*
+    widget::*,
 };
 
-live_design!{
+live_design! {
     link widgets;
     use link::widgets::*;
     use link::theme::*;
     use makepad_draw::shader::std::*;
-    
+
     pub ModalBase = {{Modal}} {}
     pub Modal = <ModalBase> {
         width: Fill
         height: Fill
         flow: Overlay
         align: {x: 0.5, y: 0.5}
-        
+
         draw_bg: {
             fn pixel(self) -> vec4 {
                 return vec4(0., 0., 0., 0.0)
             }
         }
-        
+
         bg_view: <View> {
             width: Fill
             height: Fill
@@ -35,7 +35,7 @@ live_design!{
                 }
             }
         }
-        
+
         content: <View> {
             flow: Overlay
             width: Fit
@@ -55,7 +55,8 @@ pub struct Modal {
     #[live]
     #[find]
     content: View,
-    #[live] #[area]
+    #[live]
+    #[area]
     bg_view: View,
 
     #[redraw]
@@ -103,7 +104,13 @@ impl Widget for Modal {
         // * If the Escape key was pressed
         // * If there was a click/press in the background area, outside of the inner `content` view
         let should_close = event.back_pressed()
-            || matches!(event, Event::KeyUp(KeyEvent { key_code: KeyCode::Escape, .. }))
+            || matches!(
+                event,
+                Event::KeyUp(KeyEvent {
+                    key_code: KeyCode::Escape,
+                    ..
+                })
+            )
             || match consumed_hit {
                 Hit::FingerUp(fe) => !self.content.area().rect(cx).contains(fe.abs),
                 _ => false,
@@ -122,9 +129,7 @@ impl Widget for Modal {
         self.draw_bg.begin(cx, self.walk, self.layout);
 
         if self.opened {
-            let _ = self
-                .bg_view
-                .draw_walk(cx, scope, walk);
+            let _ = self.bg_view.draw_walk(cx, scope, walk);
             let _ = self.content.draw_all(cx, scope);
         }
 

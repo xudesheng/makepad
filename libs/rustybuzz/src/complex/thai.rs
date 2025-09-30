@@ -1,8 +1,7 @@
-use crate::buffer::{ BufferClusterLevel};
+use super::*;
+use crate::buffer::BufferClusterLevel;
 use crate::ot::TableIndex;
 use crate::unicode::GeneralCategory;
-use super::*;
-
 
 pub const THAI_SHAPER: ComplexShaper = ComplexShaper {
     collect_features: None,
@@ -19,7 +18,6 @@ pub const THAI_SHAPER: ComplexShaper = ComplexShaper {
     zero_width_marks: Some(ZeroWidthMarksMode::ByGdefLate),
     fallback_position: false,
 };
-
 
 #[derive(Clone, Copy, PartialEq)]
 enum Consonant {
@@ -79,7 +77,11 @@ struct PuaMapping {
 
 impl PuaMapping {
     const fn new(u: u32, win_pua: u32, mac_pua: u32) -> Self {
-        PuaMapping { u, win_pua, mac_pua }
+        PuaMapping {
+            u,
+            win_pua,
+            mac_pua,
+        }
     }
 }
 
@@ -92,7 +94,7 @@ const SD_MAPPINGS: &[PuaMapping] = &[
     PuaMapping::new(0x0E38, 0xF718, 0xF89B), // SARA U
     PuaMapping::new(0x0E39, 0xF719, 0xF89C), // SARA UU
     PuaMapping::new(0x0E3A, 0xF71A, 0xF89D), // PHINTHU
-    PuaMapping::new(0x0000, 0x0000, 0x0000)
+    PuaMapping::new(0x0000, 0x0000, 0x0000),
 ];
 
 const SDL_MAPPINGS: &[PuaMapping] = &[
@@ -101,7 +103,7 @@ const SDL_MAPPINGS: &[PuaMapping] = &[
     PuaMapping::new(0x0E4A, 0xF707, 0xF892), // MAI TRI
     PuaMapping::new(0x0E4B, 0xF708, 0xF895), // MAI CHATTAWA
     PuaMapping::new(0x0E4C, 0xF709, 0xF898), // THANTHAKHAT
-    PuaMapping::new(0x0000, 0x0000, 0x0000)
+    PuaMapping::new(0x0000, 0x0000, 0x0000),
 ];
 
 const SL_MAPPINGS: &[PuaMapping] = &[
@@ -117,13 +119,13 @@ const SL_MAPPINGS: &[PuaMapping] = &[
     PuaMapping::new(0x0E37, 0xF704, 0xF888), // SARA UEE
     PuaMapping::new(0x0E47, 0xF712, 0xF889), // MAITAIKHU
     PuaMapping::new(0x0E4D, 0xF711, 0xF899), // NIKHAHIT
-    PuaMapping::new(0x0000, 0x0000, 0x0000)
+    PuaMapping::new(0x0000, 0x0000, 0x0000),
 ];
 
 const RD_MAPPINGS: &[PuaMapping] = &[
     PuaMapping::new(0x0E0D, 0xF70F, 0xF89A), // YO YING
     PuaMapping::new(0x0E10, 0xF700, 0xF89E), // THO THAN
-    PuaMapping::new(0x0000, 0x0000, 0x0000)
+    PuaMapping::new(0x0000, 0x0000, 0x0000),
 ];
 
 fn pua_shape(u: u32, action: Action, face: &Face) -> u32 {
@@ -185,10 +187,30 @@ type ASME = AboveStateMachineEdge;
 
 const ABOVE_STATE_MACHINE: &[[ASME; 3]] = &[
     //        AV                                      BV                                      T
-    /* T0 */ [ASME::new(Action::NOP, AboveState::T3), ASME::new(Action::NOP, AboveState::T0), ASME::new(Action::SD,  AboveState::T3)],
-    /* T1 */ [ASME::new(Action::SL,  AboveState::T2), ASME::new(Action::NOP, AboveState::T1), ASME::new(Action::SDL, AboveState::T2)],
-    /* T2 */ [ASME::new(Action::NOP, AboveState::T3), ASME::new(Action::NOP, AboveState::T2), ASME::new(Action::SL,  AboveState::T3)],
-    /* T3 */ [ASME::new(Action::NOP, AboveState::T3), ASME::new(Action::NOP, AboveState::T3), ASME::new(Action::NOP, AboveState::T3)],
+    /* T0 */
+    [
+        ASME::new(Action::NOP, AboveState::T3),
+        ASME::new(Action::NOP, AboveState::T0),
+        ASME::new(Action::SD, AboveState::T3),
+    ],
+    /* T1 */
+    [
+        ASME::new(Action::SL, AboveState::T2),
+        ASME::new(Action::NOP, AboveState::T1),
+        ASME::new(Action::SDL, AboveState::T2),
+    ],
+    /* T2 */
+    [
+        ASME::new(Action::NOP, AboveState::T3),
+        ASME::new(Action::NOP, AboveState::T2),
+        ASME::new(Action::SL, AboveState::T3),
+    ],
+    /* T3 */
+    [
+        ASME::new(Action::NOP, AboveState::T3),
+        ASME::new(Action::NOP, AboveState::T3),
+        ASME::new(Action::NOP, AboveState::T3),
+    ],
 ];
 
 #[derive(Clone, Copy)]
@@ -225,9 +247,24 @@ type BSME = BelowStateMachineEdge;
 
 const BELOW_STATE_MACHINE: &[[BSME; 3]] = &[
     //        AV                                      BV                                      T
-    /* B0 */ [BSME::new(Action::NOP, BelowState::B0), BSME::new(Action::NOP, BelowState::B2), BSME::new(Action::NOP, BelowState::B0)],
-    /* B1 */ [BSME::new(Action::NOP, BelowState::B1), BSME::new(Action::RD, BelowState::B2),  BSME::new(Action::NOP, BelowState::B1)],
-    /* B2 */ [BSME::new(Action::NOP, BelowState::B2), BSME::new(Action::SD, BelowState::B2),  BSME::new(Action::NOP, BelowState::B2)],
+    /* B0 */
+    [
+        BSME::new(Action::NOP, BelowState::B0),
+        BSME::new(Action::NOP, BelowState::B2),
+        BSME::new(Action::NOP, BelowState::B0),
+    ],
+    /* B1 */
+    [
+        BSME::new(Action::NOP, BelowState::B1),
+        BSME::new(Action::RD, BelowState::B2),
+        BSME::new(Action::NOP, BelowState::B1),
+    ],
+    /* B2 */
+    [
+        BSME::new(Action::NOP, BelowState::B2),
+        BSME::new(Action::SD, BelowState::B2),
+        BSME::new(Action::NOP, BelowState::B2),
+    ],
 ];
 
 fn do_pua_shaping(face: &Face, buffer: &mut Buffer) {
@@ -268,11 +305,7 @@ fn do_pua_shaping(face: &Face, buffer: &mut Buffer) {
 }
 
 // TODO: more tests
-fn preprocess_text(
-    plan: &ShapePlan,
-    face: &Face,
-    buffer: &mut Buffer,
-) {
+fn preprocess_text(plan: &ShapePlan, face: &Face, buffer: &mut Buffer) {
     // This function implements the shaping logic documented here:
     //
     //   https://linux.thai.net/~thep/th-otf/shaping.html
@@ -318,10 +351,20 @@ fn preprocess_text(
 
     // We only get one script at a time, so a script-agnostic implementation
     // is adequate here.
-    #[inline] fn is_sara_am(u: u32) -> bool { (u & !0x0080) == 0x0E33 }
-    #[inline] fn nikhahit_from_sara_am(u: u32) -> u32 { u - 0x0E33 + 0x0E4D }
-    #[inline] fn sara_aa_from_sara_am(u: u32) -> u32 { u - 1 }
-    #[inline] fn is_tone_mark(u: u32) -> bool {
+    #[inline]
+    fn is_sara_am(u: u32) -> bool {
+        (u & !0x0080) == 0x0E33
+    }
+    #[inline]
+    fn nikhahit_from_sara_am(u: u32) -> u32 {
+        u - 0x0E33 + 0x0E4D
+    }
+    #[inline]
+    fn sara_aa_from_sara_am(u: u32) -> u32 {
+        u - 1
+    }
+    #[inline]
+    fn is_tone_mark(u: u32) -> bool {
         let u = u & !0x0080;
         matches!(u, 0x0E34..=0x0E37 | 0x0E47..=0x0E4E | 0x0E31..=0x0E31)
     }

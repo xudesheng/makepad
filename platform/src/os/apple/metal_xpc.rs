@@ -96,7 +96,7 @@ pub fn store_xpc_service_texture(id: PresentableImageId, obj: ObjcId) {
     //log!("STORING {}", obj as *const _ as u64);
     unsafe {
         let proxy = xpc_service_proxy();
-        let completion_block = objc_block!(move | | {
+        let completion_block = objc_block!(move || {
             //log!("store texture complete!");
         });
         let completion_block = hackily_heapify_block0(&completion_block as *const _ as *const _);

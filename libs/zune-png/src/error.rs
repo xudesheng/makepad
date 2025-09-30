@@ -27,7 +27,7 @@ pub enum PngDecodeErrors {
     /// Unsupported Animated PNG
     UnsupportedAPNGImage,
     /// Too small output slice
-    TooSmallOutput(usize, usize)
+    TooSmallOutput(usize, usize),
 }
 
 impl Display for PngDecodeErrors {

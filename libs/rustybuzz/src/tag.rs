@@ -2,8 +2,8 @@ use core::str::FromStr;
 
 use smallvec::SmallVec;
 
-use crate::{Tag, Script, Language, script, tag_table};
 use crate::common::TagExt;
+use crate::{script, tag_table, Language, Script, Tag};
 
 type ThreeTags = SmallVec<[Tag; 3]>;
 
@@ -45,12 +45,12 @@ pub fn tags_from_script_and_language(
                     if bytes[i] == b'x' {
                         private_use_subtag = Some(&language[i..]);
                         if prefix.is_empty() {
-                            prefix = &language[..i-1];
+                            prefix = &language[..i - 1];
                         }
 
                         break;
                     } else {
-                        prefix = &language[..i-1];
+                        prefix = &language[..i - 1];
                     }
                 }
 
@@ -63,11 +63,17 @@ pub fn tags_from_script_and_language(
         }
 
         needs_script = !parse_private_use_subtag(
-            private_use_subtag, "-hbsc", u8::to_ascii_lowercase, &mut scripts,
+            private_use_subtag,
+            "-hbsc",
+            u8::to_ascii_lowercase,
+            &mut scripts,
         );
 
         let needs_language = !parse_private_use_subtag(
-            private_use_subtag, "-hbot", u8::to_ascii_uppercase, &mut languages,
+            private_use_subtag,
+            "-hbot",
+            u8::to_ascii_uppercase,
+            &mut languages,
         );
 
         if needs_language {
@@ -134,10 +140,7 @@ fn lang_cmp(s1: &str, s2: &str) -> core::cmp::Ordering {
     s1[..ea].cmp(&s2[..eb])
 }
 
-fn tags_from_language(
-    language: &Language,
-    tags: &mut ThreeTags,
-) {
+fn tags_from_language(language: &Language, tags: &mut ThreeTags) {
     let language = language.as_str();
 
     // Check for matches of multiple subtags.
@@ -151,13 +154,13 @@ fn tags_from_language(
     if let Some(i) = language.find('-') {
         // If there is an extended language tag, use it.
         if language.len() >= 6 {
-            let extlang = match language[i+1..].find('-') {
+            let extlang = match language[i + 1..].find('-') {
                 Some(idx) => idx == 3,
                 None => language.len() - i - 1 == 3,
             };
 
-            if extlang && language.as_bytes()[i+1].is_ascii_alphabetic() {
-                sublang = &language[i+1..];
+            if extlang && language.as_bytes()[i + 1].is_ascii_alphabetic() {
+                sublang = &language[i + 1..];
             }
         }
     }
@@ -165,7 +168,7 @@ fn tags_from_language(
     use tag_table::OPEN_TYPE_LANGUAGES as LANGUAGES;
 
     if let Ok(mut idx) = LANGUAGES.binary_search_by(|v| lang_cmp(v.language, sublang)) {
-        while idx != 0 && LANGUAGES[idx].language == LANGUAGES[idx-1].language {
+        while idx != 0 && LANGUAGES[idx].language == LANGUAGES[idx - 1].language {
             idx -= 1;
         }
 
@@ -213,16 +216,16 @@ fn all_tags_from_script(script: Option<Script>, tags: &mut ThreeTags) {
 
 fn new_tag_from_script(script: Script) -> Option<Tag> {
     match script {
-        script::BENGALI     => Some(Tag::from_bytes(b"bng2")),
-        script::DEVANAGARI  => Some(Tag::from_bytes(b"dev2")),
-        script::GUJARATI    => Some(Tag::from_bytes(b"gjr2")),
-        script::GURMUKHI    => Some(Tag::from_bytes(b"gur2")),
-        script::KANNADA     => Some(Tag::from_bytes(b"knd2")),
-        script::MALAYALAM   => Some(Tag::from_bytes(b"mlm2")),
-        script::ORIYA       => Some(Tag::from_bytes(b"ory2")),
-        script::TAMIL       => Some(Tag::from_bytes(b"tml2")),
-        script::TELUGU      => Some(Tag::from_bytes(b"tel2")),
-        script::MYANMAR     => Some(Tag::from_bytes(b"mym2")),
+        script::BENGALI => Some(Tag::from_bytes(b"bng2")),
+        script::DEVANAGARI => Some(Tag::from_bytes(b"dev2")),
+        script::GUJARATI => Some(Tag::from_bytes(b"gjr2")),
+        script::GURMUKHI => Some(Tag::from_bytes(b"gur2")),
+        script::KANNADA => Some(Tag::from_bytes(b"knd2")),
+        script::MALAYALAM => Some(Tag::from_bytes(b"mlm2")),
+        script::ORIYA => Some(Tag::from_bytes(b"ory2")),
+        script::TAMIL => Some(Tag::from_bytes(b"tml2")),
+        script::TELUGU => Some(Tag::from_bytes(b"tel2")),
+        script::MYANMAR => Some(Tag::from_bytes(b"mym2")),
         _ => None,
     }
 }
@@ -231,15 +234,15 @@ fn old_tag_from_script(script: Script) -> Tag {
     // This seems to be accurate as of end of 2012.
     match script {
         // Katakana and Hiragana both map to 'kana'.
-        script::HIRAGANA    => Tag::from_bytes(b"kana"),
+        script::HIRAGANA => Tag::from_bytes(b"kana"),
 
         // Spaces at the end are preserved, unlike ISO 15924.
-        script::LAO         => Tag::from_bytes(b"lao "),
-        script::YI          => Tag::from_bytes(b"yi  "),
+        script::LAO => Tag::from_bytes(b"lao "),
+        script::YI => Tag::from_bytes(b"yi  "),
         // Unicode-5.0 additions.
-        script::NKO         => Tag::from_bytes(b"nko "),
+        script::NKO => Tag::from_bytes(b"nko "),
         // Unicode-5.1 additions.
-        script::VAI         => Tag::from_bytes(b"vai "),
+        script::VAI => Tag::from_bytes(b"vai "),
 
         // Else, just change first char to lowercase and return.
         _ => Tag(script.tag().as_u32() | 0x20000000),
@@ -251,8 +254,8 @@ mod tests {
     #![allow(non_snake_case)]
 
     use super::*;
-    use core::str::FromStr;
     use alloc::vec::Vec;
+    use core::str::FromStr;
 
     fn new_tag_to_script(tag: Tag) -> Option<Script> {
         match &tag.to_bytes() {
@@ -320,16 +323,34 @@ mod tests {
 
     #[test]
     fn tag_to_uppercase() {
-        assert_eq!(Tag::from_bytes(b"abcd").to_uppercase(), Tag::from_bytes(b"ABCD"));
-        assert_eq!(Tag::from_bytes(b"abc ").to_uppercase(), Tag::from_bytes(b"ABC "));
-        assert_eq!(Tag::from_bytes(b"ABCD").to_uppercase(), Tag::from_bytes(b"ABCD"));
+        assert_eq!(
+            Tag::from_bytes(b"abcd").to_uppercase(),
+            Tag::from_bytes(b"ABCD")
+        );
+        assert_eq!(
+            Tag::from_bytes(b"abc ").to_uppercase(),
+            Tag::from_bytes(b"ABC ")
+        );
+        assert_eq!(
+            Tag::from_bytes(b"ABCD").to_uppercase(),
+            Tag::from_bytes(b"ABCD")
+        );
     }
 
     #[test]
     fn tag_to_lowercase() {
-        assert_eq!(Tag::from_bytes(b"abcd").to_lowercase(), Tag::from_bytes(b"abcd"));
-        assert_eq!(Tag::from_bytes(b"abc ").to_lowercase(), Tag::from_bytes(b"abc "));
-        assert_eq!(Tag::from_bytes(b"ABCD").to_lowercase(), Tag::from_bytes(b"abcd"));
+        assert_eq!(
+            Tag::from_bytes(b"abcd").to_lowercase(),
+            Tag::from_bytes(b"abcd")
+        );
+        assert_eq!(
+            Tag::from_bytes(b"abc ").to_lowercase(),
+            Tag::from_bytes(b"abc ")
+        );
+        assert_eq!(
+            Tag::from_bytes(b"ABCD").to_lowercase(),
+            Tag::from_bytes(b"abcd")
+        );
     }
 
     #[test]
@@ -343,13 +364,19 @@ mod tests {
         assert_eq!(scripts.as_slice(), &[Tag::from_bytes(b"kana")]);
 
         // Spaces are replaced
-        assert_eq!(tag_to_script(Tag::from_bytes(b"be  ")), Script::from_iso15924_tag(Tag::from_bytes(b"Beee")));
+        assert_eq!(
+            tag_to_script(Tag::from_bytes(b"be  ")),
+            Script::from_iso15924_tag(Tag::from_bytes(b"Beee"))
+        );
     }
 
     #[test]
     fn script_simple() {
         // Arbitrary non-existent script.
-        test_simple_tags("wwyz", Script::from_iso15924_tag(Tag::from_bytes(b"wWyZ")).unwrap());
+        test_simple_tags(
+            "wwyz",
+            Script::from_iso15924_tag(Tag::from_bytes(b"wWyZ")).unwrap(),
+        );
 
         // These we don't really care about.
         test_simple_tags("zyyy", script::COMMON);
@@ -382,9 +409,8 @@ mod tests {
             #[test]
             fn $name() {
                 let tag = Tag::from_bytes_lossy($tag.as_bytes());
-                let (scripts, _) = tags_from_script_and_language(
-                    $script, Language::from_str($lang).ok().as_ref(),
-                );
+                let (scripts, _) =
+                    tags_from_script_and_language($script, Language::from_str($lang).ok().as_ref());
                 if !scripts.is_empty() {
                     assert_eq!(scripts.as_slice(), &[tag]);
                 }
@@ -396,19 +422,34 @@ mod tests {
     test_script_from_language!(script_from_language_02, "", "en", None);
     test_script_from_language!(script_from_language_03, "copt", "en", Some(script::COPTIC));
     test_script_from_language!(script_from_language_04, "", "x-hbsc", None);
-    test_script_from_language!(script_from_language_05, "copt", "x-hbsc", Some(script::COPTIC));
+    test_script_from_language!(
+        script_from_language_05,
+        "copt",
+        "x-hbsc",
+        Some(script::COPTIC)
+    );
     test_script_from_language!(script_from_language_06, "abc ", "x-hbscabc", None);
     test_script_from_language!(script_from_language_07, "deva", "x-hbscdeva", None);
     test_script_from_language!(script_from_language_08, "dev2", "x-hbscdev2", None);
     test_script_from_language!(script_from_language_09, "dev3", "x-hbscdev3", None);
     test_script_from_language!(script_from_language_10, "copt", "x-hbotpap0-hbsccopt", None);
     test_script_from_language!(script_from_language_11, "", "en-x-hbsc", None);
-    test_script_from_language!(script_from_language_12, "copt", "en-x-hbsc", Some(script::COPTIC));
+    test_script_from_language!(
+        script_from_language_12,
+        "copt",
+        "en-x-hbsc",
+        Some(script::COPTIC)
+    );
     test_script_from_language!(script_from_language_13, "abc ", "en-x-hbscabc", None);
     test_script_from_language!(script_from_language_14, "deva", "en-x-hbscdeva", None);
     test_script_from_language!(script_from_language_15, "dev2", "en-x-hbscdev2", None);
     test_script_from_language!(script_from_language_16, "dev3", "en-x-hbscdev3", None);
-    test_script_from_language!(script_from_language_17, "copt", "en-x-hbotpap0-hbsccopt", None);
+    test_script_from_language!(
+        script_from_language_17,
+        "copt",
+        "en-x-hbotpap0-hbsccopt",
+        None
+    );
 
     #[test]
     fn script_indic() {
@@ -442,7 +483,8 @@ mod tests {
             fn $name() {
                 let tag = Tag::from_bytes_lossy($tag.as_bytes());
                 let (_, languages) = tags_from_script_and_language(
-                    None, Language::from_str(&$lang.to_lowercase()).ok().as_ref(),
+                    None,
+                    Language::from_str(&$lang.to_lowercase()).ok().as_ref(),
                 );
                 if !languages.is_empty() {
                     assert_eq!(languages[0], tag);
@@ -510,10 +552,26 @@ mod tests {
     test_tag_from_language!(tag_from_language_yue_Hans, "ZHS", "yue-Hans");
     test_tag_from_language!(tag_from_language_ABC, "ABC", "abc");
     test_tag_from_language!(tag_from_language_ABCD, "ABCD", "x-hbotabcd");
-    test_tag_from_language!(tag_from_language_asdf_asdf_wer_x_hbotabc_zxc, "ABC", "asdf-asdf-wer-x-hbotabc-zxc");
-    test_tag_from_language!(tag_from_language_asdf_asdf_wer_x_hbotabc, "ABC", "asdf-asdf-wer-x-hbotabc");
-    test_tag_from_language!(tag_from_language_asdf_asdf_wer_x_hbotabcd, "ABCD", "asdf-asdf-wer-x-hbotabcd");
-    test_tag_from_language!(tag_from_language_asdf_asdf_wer_x_hbot_zxc, "dflt", "asdf-asdf-wer-x-hbot-zxc");
+    test_tag_from_language!(
+        tag_from_language_asdf_asdf_wer_x_hbotabc_zxc,
+        "ABC",
+        "asdf-asdf-wer-x-hbotabc-zxc"
+    );
+    test_tag_from_language!(
+        tag_from_language_asdf_asdf_wer_x_hbotabc,
+        "ABC",
+        "asdf-asdf-wer-x-hbotabc"
+    );
+    test_tag_from_language!(
+        tag_from_language_asdf_asdf_wer_x_hbotabcd,
+        "ABCD",
+        "asdf-asdf-wer-x-hbotabcd"
+    );
+    test_tag_from_language!(
+        tag_from_language_asdf_asdf_wer_x_hbot_zxc,
+        "dflt",
+        "asdf-asdf-wer-x-hbot-zxc"
+    );
     test_tag_from_language!(tag_from_language_xy, "dflt", "xy");
     test_tag_from_language!(tag_from_language_xyz, "XYZ", "xyz"); /* Unknown ISO 639-3 */
     test_tag_from_language!(tag_from_language_xyz_qw, "XYZ", "xyz-qw"); /* Unknown ISO 639-3 */
@@ -531,12 +589,24 @@ mod tests {
     test_tag_from_language!(tag_from_language_en_fonipax, "ENG", "en-fonipax");
     test_tag_from_language!(tag_from_language_en_x_fonipa, "ENG", "en-x-fonipa");
     test_tag_from_language!(tag_from_language_en_a_fonipa, "ENG", "en-a-fonipa");
-    test_tag_from_language!(tag_from_language_en_a_qwe_b_fonipa, "ENG", "en-a-qwe-b-fonipa");
+    test_tag_from_language!(
+        tag_from_language_en_a_qwe_b_fonipa,
+        "ENG",
+        "en-a-qwe-b-fonipa"
+    );
 
     /* International Phonetic Alphabet */
     test_tag_from_language!(tag_from_language_en_fonipa, "IPPH", "en-fonipa");
-    test_tag_from_language!(tag_from_language_en_fonipax_fonipa, "IPPH", "en-fonipax-fonipa");
-    test_tag_from_language!(tag_from_language_rm_ch_fonipa_sursilv_x_foobar, "IPPH", "rm-CH-fonipa-sursilv-x-foobar");
+    test_tag_from_language!(
+        tag_from_language_en_fonipax_fonipa,
+        "IPPH",
+        "en-fonipax-fonipa"
+    );
+    test_tag_from_language!(
+        tag_from_language_rm_ch_fonipa_sursilv_x_foobar,
+        "IPPH",
+        "rm-CH-fonipa-sursilv-x-foobar"
+    );
     test_tag_from_language!(tag_from_language_IPPH, "IPPH", "und-fonipa");
     test_tag_from_language!(tag_from_language_zh_fonipa, "IPPH", "zh-fonipa");
 
@@ -578,12 +648,36 @@ mod tests {
     test_tag_from_language!(tag_from_language_SYRN, "SYRN", "und-Syrn");
 
     /* Test that x-hbot overrides the base language */
-    test_tag_from_language!(tag_from_language_fa_x_hbotabc_zxc, "ABC", "fa-x-hbotabc-zxc");
-    test_tag_from_language!(tag_from_language_fa_ir_x_hbotabc_zxc, "ABC", "fa-ir-x-hbotabc-zxc");
-    test_tag_from_language!(tag_from_language_zh_x_hbotabc_zxc, "ABC", "zh-x-hbotabc-zxc");
-    test_tag_from_language!(tag_from_language_zh_cn_x_hbotabc_zxc, "ABC", "zh-cn-x-hbotabc-zxc");
-    test_tag_from_language!(tag_from_language_zh_xy_x_hbotabc_zxc, "ABC", "zh-xy-x-hbotabc-zxc");
-    test_tag_from_language!(tag_from_language_xyz_xy_x_hbotabc_zxc, "ABC", "xyz-xy-x-hbotabc-zxc");
+    test_tag_from_language!(
+        tag_from_language_fa_x_hbotabc_zxc,
+        "ABC",
+        "fa-x-hbotabc-zxc"
+    );
+    test_tag_from_language!(
+        tag_from_language_fa_ir_x_hbotabc_zxc,
+        "ABC",
+        "fa-ir-x-hbotabc-zxc"
+    );
+    test_tag_from_language!(
+        tag_from_language_zh_x_hbotabc_zxc,
+        "ABC",
+        "zh-x-hbotabc-zxc"
+    );
+    test_tag_from_language!(
+        tag_from_language_zh_cn_x_hbotabc_zxc,
+        "ABC",
+        "zh-cn-x-hbotabc-zxc"
+    );
+    test_tag_from_language!(
+        tag_from_language_zh_xy_x_hbotabc_zxc,
+        "ABC",
+        "zh-xy-x-hbotabc-zxc"
+    );
+    test_tag_from_language!(
+        tag_from_language_xyz_xy_x_hbotabc_zxc,
+        "ABC",
+        "xyz-xy-x-hbotabc-zxc"
+    );
 
     /* Unnormalized BCP 47 tags */
     test_tag_from_language!(tag_from_language_ar_aao, "ARA", "ar-aao");
@@ -611,12 +705,13 @@ mod tests {
         ($name:ident, $script:expr, $lang:expr, $scripts:expr, $langs:expr) => {
             #[test]
             fn $name() {
-                let (scripts, languages) = tags_from_script_and_language(
-                    $script, Language::from_str($lang).ok().as_ref(),
-                );
+                let (scripts, languages) =
+                    tags_from_script_and_language($script, Language::from_str($lang).ok().as_ref());
 
-                let exp_scripts: Vec<Tag> = $scripts.iter().map(|v| Tag::from_bytes_lossy(*v)).collect();
-                let exp_langs: Vec<Tag> = $langs.iter().map(|v| Tag::from_bytes_lossy(*v)).collect();
+                let exp_scripts: Vec<Tag> =
+                    $scripts.iter().map(|v| Tag::from_bytes_lossy(*v)).collect();
+                let exp_langs: Vec<Tag> =
+                    $langs.iter().map(|v| Tag::from_bytes_lossy(*v)).collect();
 
                 assert_eq!(exp_scripts, scripts.as_slice());
                 assert_eq!(exp_langs, languages.as_slice());
@@ -625,13 +720,43 @@ mod tests {
     }
 
     test_tags!(tag_full_en, None, "en", &[], &[b"ENG"]);
-    test_tags!(tag_full_en_x_hbscdflt, None, "en-x-hbscdflt", &[b"DFLT"], &[b"ENG"]);
-    test_tags!(tag_full_en_latin, Some(script::LATIN), "en", &[b"latn"], &[b"ENG"]);
+    test_tags!(
+        tag_full_en_x_hbscdflt,
+        None,
+        "en-x-hbscdflt",
+        &[b"DFLT"],
+        &[b"ENG"]
+    );
+    test_tags!(
+        tag_full_en_latin,
+        Some(script::LATIN),
+        "en",
+        &[b"latn"],
+        &[b"ENG"]
+    );
     test_tags!(tag_full_und_fonnapa, None, "und-fonnapa", &[], &[b"APPH"]);
     test_tags!(tag_full_en_fonnapa, None, "en-fonnapa", &[], &[b"APPH"]);
-    test_tags!(tag_full_x_hbot1234_hbsc5678, None, "x-hbot1234-hbsc5678", &[b"5678"], &[b"1234"]);
-    test_tags!(tag_full_x_hbsc5678_hbot1234, None, "x-hbsc5678-hbot1234", &[b"5678"], &[b"1234"]);
-    test_tags!(tag_full_ml, Some(script::MALAYALAM), "ml", &[b"mlm3", b"mlm2", b"mlym"], &[b"MAL", b"MLR"]);
+    test_tags!(
+        tag_full_x_hbot1234_hbsc5678,
+        None,
+        "x-hbot1234-hbsc5678",
+        &[b"5678"],
+        &[b"1234"]
+    );
+    test_tags!(
+        tag_full_x_hbsc5678_hbot1234,
+        None,
+        "x-hbsc5678-hbot1234",
+        &[b"5678"],
+        &[b"1234"]
+    );
+    test_tags!(
+        tag_full_ml,
+        Some(script::MALAYALAM),
+        "ml",
+        &[b"mlm3", b"mlm2", b"mlym"],
+        &[b"MAL", b"MLR"]
+    );
     test_tags!(tag_full_xyz, None, "xyz", &[], &[b"XYZ"]);
     test_tags!(tag_full_xy, None, "xy", &[], &[]);
 }

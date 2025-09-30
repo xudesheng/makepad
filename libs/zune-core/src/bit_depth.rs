@@ -41,7 +41,7 @@ pub enum BitDepth {
     /// Uses f32 to store data
     Float32,
     /// Bit depth information is unknown
-    Unknown
+    Unknown,
 }
 
 /// The underlying bit representation of the image
@@ -60,7 +60,7 @@ pub enum BitType {
     U16,
     /// Images represented using a [`f32`] as their
     /// underlying pixel storage
-    F32
+    F32,
 }
 
 impl Default for BitDepth {
@@ -113,7 +113,7 @@ impl BitDepth {
             Self::Eight => BitType::U8,
             Self::Sixteen => BitType::U16,
             Self::Float32 => BitType::F32,
-            Self::Unknown => panic!("Unknown bit type")
+            Self::Unknown => panic!("Unknown bit type"),
         }
     }
     /// Get the number of bytes needed to store a specific bit depth
@@ -136,7 +136,7 @@ impl BitDepth {
             Self::Eight => core::mem::size_of::<u8>(),
             Self::Sixteen => core::mem::size_of::<u16>(),
             Self::Float32 => core::mem::size_of::<f32>(),
-            Self::Unknown => panic!("Unknown bit type")
+            Self::Unknown => panic!("Unknown bit type"),
         }
     }
     pub const fn bit_size(&self) -> usize {
@@ -154,5 +154,5 @@ pub enum ByteEndian {
     /// Little Endian byte-order
     LE,
     /// Big Endian byte-order
-    BE
+    BE,
 }

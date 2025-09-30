@@ -47,7 +47,7 @@ pub enum Marker {
     /// Reserved for application segments
     APP(u8),
     /// Comment
-    COM
+    COM,
 }
 
 impl Marker {
@@ -79,7 +79,7 @@ impl Marker {
             0xE1 => Some(APP(1)),
             0xE2 => Some(APP(2)),
             0xEE => Some(APP(14)),
-            _ => None
+            _ => None,
         }
     }
 }

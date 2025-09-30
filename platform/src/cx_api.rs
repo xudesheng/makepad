@@ -6,26 +6,26 @@ use {
         cursor::MouseCursor,
         cx::{Cx, CxRef, OsType, XrCapabilities},
         draw_list::DrawListId,
+        dvec2,
+        event::xr::XrAnchor,
         event::{DragItem, HttpRequest, NextFrame, Timer, Trigger, VideoSource},
         gpu_info::GpuInfo,
         macos_menu::MacosMenu,
         makepad_futures::executor::Spawner,
         makepad_live_id::*,
-        event::xr::XrAnchor,
         makepad_math::{DVec2, Rect},
         pass::{CxPassParent, CxPassRect, PassId},
         texture::Texture,
         window::WindowId,
-        dvec2,
     },
     std::{
         any::{Any, TypeId},
         rc::Rc,
     },
 };
-pub enum OpenUrlInPlace{
+pub enum OpenUrlInPlace {
     Yes,
-    No
+    No,
 }
 pub trait CxOsApi {
     fn init_cx_os(&mut self);
@@ -33,24 +33,32 @@ pub trait CxOsApi {
     fn spawn_thread<F>(&mut self, f: F)
     where
         F: FnOnce() + Send + 'static;
-        
+
     fn start_stdin_service(&mut self) {}
     fn pre_start() -> bool {
         false
     }
-    
-    fn open_url(&mut self, url:&str, in_place:OpenUrlInPlace);
-    
-    fn seconds_since_app_start(&self)->f64;
-    
-    fn default_window_size(&self)->DVec2{dvec2(800.,600.)}
-    
-    fn max_texture_width()->usize{4096}
-    
-    fn in_xr_mode(&self)->bool{false}
-    
-    fn micro_zbias_step(&self)->f32{0.00001}
-    
+
+    fn open_url(&mut self, url: &str, in_place: OpenUrlInPlace);
+
+    fn seconds_since_app_start(&self) -> f64;
+
+    fn default_window_size(&self) -> DVec2 {
+        dvec2(800., 600.)
+    }
+
+    fn max_texture_width() -> usize {
+        4096
+    }
+
+    fn in_xr_mode(&self) -> bool {
+        false
+    }
+
+    fn micro_zbias_step(&self) -> f32 {
+        0.00001
+    }
+
     /*
     fn web_socket_open(&mut self, url: String, rec: WebSocketAutoReconnect) -> WebSocket;
     fn web_socket_send(&mut self, socket: WebSocket, data: Vec<u8>);*/
@@ -92,7 +100,7 @@ pub enum CxOsOp {
         request_id: LiveId,
         request: HttpRequest,
     },
-    CancelHttpRequest{
+    CancelHttpRequest {
         request_id: LiveId,
     },
 
@@ -104,91 +112,90 @@ pub enum CxOsOp {
     UnmuteVideoPlayback(LiveId),
     CleanupVideoPlaybackResources(LiveId),
     UpdateVideoSurfaceTexture(LiveId),
-    
-    CreateWebView{
+
+    CreateWebView {
         id: LiveId,
         area: Area,
         texture: Texture,
-        url: String
+        url: String,
     },
-    UpdateWebView{
+    UpdateWebView {
         id: LiveId,
-        area: Area
+        area: Area,
     },
-    CloseWebView{
-        id:LiveId
+    CloseWebView {
+        id: LiveId,
     },
     SaveFileDialog(FileDialog),
     SelectFileDialog(FileDialog),
     SaveFolderDialog(FileDialog),
-    SelectFolderDialog(FileDialog),    
-    
+    SelectFolderDialog(FileDialog),
+
     XrStartPresenting,
     XrSetLocalAnchor(XrAnchor),
     XrAdvertiseAnchor(XrAnchor),
     XrDiscoverAnchor(u8),
     XrStopPresenting,
-    
 }
 
 impl std::fmt::Debug for CxOsOp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self{
-            Self::CreateWindow(..)=>write!(f, "CreateWindow"),
-            Self::CloseWindow(..)=>write!(f, "CloseWindow"),
-            Self::MinimizeWindow(..)=>write!(f, "MinimizeWindow"),
-            Self::Deminiaturize(..)=>write!(f, "Deminiaturize"),
-            Self::MaximizeWindow(..)=>write!(f, "MaximizeWindow"),
-            Self::FullscreenWindow(..)=>write!(f, "FullscreenWindow"),
-            Self::NormalizeWindow(..)=>write!(f, "NormalizeWindow"),
-            Self::RestoreWindow(..)=>write!(f, "RestoreWindow"),
-            Self::HideWindow(..)=>write!(f, "HideWindow"),
-            Self::SetTopmost(..)=>write!(f, "SetTopmost"),
-            Self::ShowInDock(..)=>write!(f, "ShowInDock"),
-            
-            Self::ShowTextIME(..)=>write!(f, "ShowTextIME"),
-            Self::HideTextIME=>write!(f, "HideTextIME"),
-            Self::SetCursor(..)=>write!(f, "SetCursor"),
-            Self::StartTimer{..}=>write!(f, "StartTimer"),
-            Self::StopTimer(..)=>write!(f, "StopTimer"),
-            Self::Quit=>write!(f, "Quit"),
-            
-            Self::StartDragging(..)=>write!(f, "StartDragging"),
-            Self::UpdateMacosMenu(..)=>write!(f, "UpdateMacosMenu"),
-            Self::ShowClipboardActions(..)=>write!(f, "ShowClipboardActions"),
-            Self::CopyToClipboard(..)=>write!(f, "CopyToClipboard"),
-            
-            Self::HttpRequest{..}=>write!(f, "HttpRequest"),
-            Self::CancelHttpRequest{..}=>write!(f, "CancelHttpRequest"),
-            
-            Self::PrepareVideoPlayback(..)=>write!(f, "PrepareVideoPlayback"),
-            Self::BeginVideoPlayback(..)=>write!(f, "BeginVideoPlayback"),
-            Self::PauseVideoPlayback(..)=>write!(f, "PauseVideoPlayback"),
-            Self::ResumeVideoPlayback(..)=>write!(f, "ResumeVideoPlayback"),
-            Self::MuteVideoPlayback(..)=>write!(f, "MuteVideoPlayback"),
-            Self::UnmuteVideoPlayback(..)=>write!(f, "UnmuteVideoPlayback"),
-            Self::CleanupVideoPlaybackResources(..)=>write!(f, "CleanupVideoPlaybackResources"),
-            Self::UpdateVideoSurfaceTexture(..)=>write!(f, "UpdateVideoSurfaceTexture"),
-            Self::CreateWebView{..}=>write!(f, "CreateWebView"),
-            Self::UpdateWebView{..}=>write!(f, "UpdateWebView"),
-            Self::CloseWebView{..}=>write!(f, "CloseWebView"),
-            Self::SaveFileDialog(..)=>write!(f, "SaveFileDialog"),
-            Self::SelectFileDialog(..)=>write!(f, "SelectFileDialog"),
-            Self::SaveFolderDialog(..)=>write!(f, "SaveFolderDialog"),
-            Self::SelectFolderDialog(..)=>write!(f, "SelectFolderDialog"),
-            Self::ResizeWindow(..)=>write!(f, "ResizeWindow"),
-            Self::RepositionWindow(..)=>write!(f, "RepositionWindow"),
-            
-            Self::XrStartPresenting=>write!(f, "XrStartPresenting"),
-            Self::XrStopPresenting=>write!(f, "XrStopPresenting"),
-            Self::XrAdvertiseAnchor(_)=>write!(f, "XrAdvertiseAnchor"),
-            Self::XrSetLocalAnchor(_)=>write!(f, "XrSetLocalAnchor"),
-            Self::XrDiscoverAnchor(_)=>write!(f, "XrDiscoverAnchor"),
+        match self {
+            Self::CreateWindow(..) => write!(f, "CreateWindow"),
+            Self::CloseWindow(..) => write!(f, "CloseWindow"),
+            Self::MinimizeWindow(..) => write!(f, "MinimizeWindow"),
+            Self::Deminiaturize(..) => write!(f, "Deminiaturize"),
+            Self::MaximizeWindow(..) => write!(f, "MaximizeWindow"),
+            Self::FullscreenWindow(..) => write!(f, "FullscreenWindow"),
+            Self::NormalizeWindow(..) => write!(f, "NormalizeWindow"),
+            Self::RestoreWindow(..) => write!(f, "RestoreWindow"),
+            Self::HideWindow(..) => write!(f, "HideWindow"),
+            Self::SetTopmost(..) => write!(f, "SetTopmost"),
+            Self::ShowInDock(..) => write!(f, "ShowInDock"),
+
+            Self::ShowTextIME(..) => write!(f, "ShowTextIME"),
+            Self::HideTextIME => write!(f, "HideTextIME"),
+            Self::SetCursor(..) => write!(f, "SetCursor"),
+            Self::StartTimer { .. } => write!(f, "StartTimer"),
+            Self::StopTimer(..) => write!(f, "StopTimer"),
+            Self::Quit => write!(f, "Quit"),
+
+            Self::StartDragging(..) => write!(f, "StartDragging"),
+            Self::UpdateMacosMenu(..) => write!(f, "UpdateMacosMenu"),
+            Self::ShowClipboardActions(..) => write!(f, "ShowClipboardActions"),
+            Self::CopyToClipboard(..) => write!(f, "CopyToClipboard"),
+
+            Self::HttpRequest { .. } => write!(f, "HttpRequest"),
+            Self::CancelHttpRequest { .. } => write!(f, "CancelHttpRequest"),
+
+            Self::PrepareVideoPlayback(..) => write!(f, "PrepareVideoPlayback"),
+            Self::BeginVideoPlayback(..) => write!(f, "BeginVideoPlayback"),
+            Self::PauseVideoPlayback(..) => write!(f, "PauseVideoPlayback"),
+            Self::ResumeVideoPlayback(..) => write!(f, "ResumeVideoPlayback"),
+            Self::MuteVideoPlayback(..) => write!(f, "MuteVideoPlayback"),
+            Self::UnmuteVideoPlayback(..) => write!(f, "UnmuteVideoPlayback"),
+            Self::CleanupVideoPlaybackResources(..) => write!(f, "CleanupVideoPlaybackResources"),
+            Self::UpdateVideoSurfaceTexture(..) => write!(f, "UpdateVideoSurfaceTexture"),
+            Self::CreateWebView { .. } => write!(f, "CreateWebView"),
+            Self::UpdateWebView { .. } => write!(f, "UpdateWebView"),
+            Self::CloseWebView { .. } => write!(f, "CloseWebView"),
+            Self::SaveFileDialog(..) => write!(f, "SaveFileDialog"),
+            Self::SelectFileDialog(..) => write!(f, "SelectFileDialog"),
+            Self::SaveFolderDialog(..) => write!(f, "SaveFolderDialog"),
+            Self::SelectFolderDialog(..) => write!(f, "SelectFolderDialog"),
+            Self::ResizeWindow(..) => write!(f, "ResizeWindow"),
+            Self::RepositionWindow(..) => write!(f, "RepositionWindow"),
+
+            Self::XrStartPresenting => write!(f, "XrStartPresenting"),
+            Self::XrStopPresenting => write!(f, "XrStopPresenting"),
+            Self::XrAdvertiseAnchor(_) => write!(f, "XrAdvertiseAnchor"),
+            Self::XrSetLocalAnchor(_) => write!(f, "XrSetLocalAnchor"),
+            Self::XrDiscoverAnchor(_) => write!(f, "XrDiscoverAnchor"),
         }
     }
 }
 impl Cx {
-    pub fn in_draw_event(&self)->bool{
+    pub fn in_draw_event(&self) -> bool {
         self.in_draw_event
     }
 
@@ -199,7 +206,7 @@ impl Cx {
     pub fn get_ref(&self) -> CxRef {
         CxRef(self.self_ref.clone().unwrap())
     }
-    
+
     pub fn take_dependency(&mut self, path: &str) -> Result<Rc<Vec<u8>>, String> {
         if let Some(data) = self.dependencies.get_mut(path) {
             if let Some(data) = data.data.take() {
@@ -211,7 +218,7 @@ impl Cx {
         }
         Err(format!("Dependency not loaded {}", path))
     }
-    
+
     pub fn get_dependency(&self, path: &str) -> Result<Rc<Vec<u8>>, String> {
         if let Some(data) = self.dependencies.get(path) {
             if let Some(data) = &data.data {
@@ -233,13 +240,13 @@ impl Cx {
     pub fn os_type(&self) -> &OsType {
         &self.os_type
     }
-    
+
     /// Returns the app's writable data directory path.
-    /// 
+    ///
     /// On Android, this is the directory returned by Activity's getFilesDir().
     /// On iOS, this is the Application Support directory.
     /// Returns None on unsupported platforms (e.g. wasm).
-    /// 
+    ///
     /// Note that this path is not guaranteed to exist (it doesn't by default on iOS simulators),
     /// so you might need to create it.
     pub fn get_data_dir(&self) -> Option<String> {
@@ -260,29 +267,28 @@ impl Cx {
     pub fn update_macos_menu(&mut self, menu: MacosMenu) {
         self.platform_ops.push(CxOsOp::UpdateMacosMenu(menu));
     }
-    
+
     pub fn xr_start_presenting(&mut self) {
         self.platform_ops.push(CxOsOp::XrStartPresenting);
     }
-    
-    pub fn xr_advertise_anchor(&mut self, anchor:XrAnchor) {
+
+    pub fn xr_advertise_anchor(&mut self, anchor: XrAnchor) {
         self.platform_ops.push(CxOsOp::XrAdvertiseAnchor(anchor));
     }
-    
-    pub fn xr_set_local_anchor(&mut self,  anchor:XrAnchor) {
+
+    pub fn xr_set_local_anchor(&mut self, anchor: XrAnchor) {
         self.platform_ops.push(CxOsOp::XrSetLocalAnchor(anchor));
     }
-            
+
     pub fn xr_discover_anchor(&mut self, id: u8) {
         self.platform_ops.push(CxOsOp::XrDiscoverAnchor(id));
     }
-        
-        
+
     pub fn quit(&mut self) {
         self.platform_ops.push(CxOsOp::Quit);
     }
-    // Determines whether to show your application in the dock when it runs. The default value is true. 
-    // You can remove the dock icon by setting this value to false. 
+    // Determines whether to show your application in the dock when it runs. The default value is true.
+    // You can remove the dock icon by setting this value to false.
     pub fn show_in_dock(&mut self, show: bool) {
         self.platform_ops.push(CxOsOp::ShowInDock(show));
     }
@@ -315,10 +321,11 @@ impl Cx {
     }
 
     /// Copies the given string to the clipboard.
-    /// 
+    ///
     /// Due to lack of platform clipboard support, it does not work on Web or tvOS.
     pub fn copy_to_clipboard(&mut self, content: &str) {
-        self.platform_ops.push(CxOsOp::CopyToClipboard(content.to_owned()));
+        self.platform_ops
+            .push(CxOsOp::CopyToClipboard(content.to_owned()));
     }
 
     pub fn start_dragging(&mut self, items: Vec<DragItem>) {
@@ -376,7 +383,6 @@ impl Cx {
         }
     }
 
-
     pub fn get_dpi_factor_of(&mut self, area: &Area) -> f64 {
         if let Some(draw_list_id) = area.draw_list_id() {
             let pass_id = self.draw_lists[draw_list_id].pass_id.unwrap();
@@ -384,25 +390,23 @@ impl Cx {
         }
         return 1.0;
     }
-    
+
     pub fn get_pass_window_id(&self, pass_id: PassId) -> Option<WindowId> {
-         let mut pass_id_walk = pass_id;
-         for _ in 0..25 {
-             match self.passes[pass_id_walk].parent {
-                 CxPassParent::Window(window_id) => {
-                     return Some(window_id)
-                 }
-                 CxPassParent::Pass(next_pass_id) => {
-                     pass_id_walk = next_pass_id;
-                 }
-                 _ => {
-                     break;
-                 }
-             }
-         }
-         None
-     }
-    
+        let mut pass_id_walk = pass_id;
+        for _ in 0..25 {
+            match self.passes[pass_id_walk].parent {
+                CxPassParent::Window(window_id) => return Some(window_id),
+                CxPassParent::Pass(next_pass_id) => {
+                    pass_id_walk = next_pass_id;
+                }
+                _ => {
+                    break;
+                }
+            }
+        }
+        None
+    }
+
     pub fn get_delegated_dpi_factor(&mut self, pass_id: PassId) -> f64 {
         let mut pass_id_walk = pass_id;
         for _ in 0..25 {
@@ -517,13 +521,13 @@ impl Cx {
             self.redraw_list(draw_list_id);
         }
     }
-    
+
     pub fn redraw_area_in_draw(&mut self, area: Area) {
         if let Some(draw_list_id) = area.draw_list_id() {
             self.redraw_list_in_draw(draw_list_id);
         }
     }
-    
+
     pub fn redraw_area_and_children(&mut self, area: Area) {
         if let Some(draw_list_id) = area.draw_list_id() {
             self.redraw_list_and_children(draw_list_id);
@@ -531,19 +535,19 @@ impl Cx {
     }
 
     pub fn redraw_list(&mut self, draw_list_id: DrawListId) {
-        if self.in_draw_event{
-            return
+        if self.in_draw_event {
+            return;
         }
         self.redraw_list_in_draw(draw_list_id);
     }
-    
+
     pub fn redraw_list_in_draw(&mut self, draw_list_id: DrawListId) {
         if self
-        .new_draw_event
-        .draw_lists
-        .iter()
-        .position(|v| *v == draw_list_id)
-        .is_some()
+            .new_draw_event
+            .draw_lists
+            .iter()
+            .position(|v| *v == draw_list_id)
+            .is_some()
         {
             return;
         }
@@ -551,8 +555,8 @@ impl Cx {
     }
 
     pub fn redraw_list_and_children(&mut self, draw_list_id: DrawListId) {
-        if self.in_draw_event{
-            return
+        if self.in_draw_event {
+            return;
         }
         if self
             .new_draw_event
@@ -654,11 +658,10 @@ impl Cx {
             request,
         });
     }
-    
+
     pub fn cancel_http_request(&mut self, request_id: LiveId) {
-        self.platform_ops.push(CxOsOp::CancelHttpRequest {
-            request_id,
-        });
+        self.platform_ops
+            .push(CxOsOp::CancelHttpRequest { request_id });
     }
     /*
         pub fn web_socket_open(&mut self, request_id: LiveId, request: HttpRequest) {
@@ -724,21 +727,23 @@ impl Cx {
     }
 
     pub fn open_system_savefile_dialog(&mut self) {
-        self.platform_ops.push(CxOsOp::SaveFileDialog(FileDialog::new()));
+        self.platform_ops
+            .push(CxOsOp::SaveFileDialog(FileDialog::new()));
     }
 
     pub fn open_system_openfile_dialog(&mut self) {
-        self.platform_ops.push(CxOsOp::SelectFileDialog(FileDialog::new()));
+        self.platform_ops
+            .push(CxOsOp::SelectFileDialog(FileDialog::new()));
     }
 
     pub fn open_system_savefolder_dialog(&mut self) {
-        self.platform_ops.push(CxOsOp::SaveFolderDialog(FileDialog::new()));
-
+        self.platform_ops
+            .push(CxOsOp::SaveFolderDialog(FileDialog::new()));
     }
 
     pub fn open_system_openfolder_dialog(&mut self) {
-        self.platform_ops.push(CxOsOp::SelectFolderDialog(FileDialog::new()));
-
+        self.platform_ops
+            .push(CxOsOp::SelectFolderDialog(FileDialog::new()));
     }
 
     pub fn event_id(&self) -> u64 {

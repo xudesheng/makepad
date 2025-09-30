@@ -1,11 +1,4 @@
-use {
-    crate::{
-        event::{
-            WindowGeomChangeEvent,
-            TimerEvent,
-        },
-    }
-};
+use crate::event::{TimerEvent, WindowGeomChangeEvent};
 
 #[derive(Debug, Clone)]
 pub enum TvosEvent {

@@ -25,7 +25,7 @@ pub(crate) fn write_ihdr(ctx: &PngEncoder, output: &mut ZByteWriter) {
         ColorSpace::RGB => 2,
         ColorSpace::LumaA => 4,
         ColorSpace::RGBA => 6,
-        _ => unreachable!()
+        _ => unreachable!(),
     };
     output.write_u8(color_int);
     //compression method
@@ -61,7 +61,10 @@ pub fn write_iend(_: &PngEncoder, _: &mut ZByteWriter) {}
 /// This should be called with the appropriate inner function to write data
 ///
 pub fn write_header_fn<F: Fn(&PngEncoder, &mut ZByteWriter)>(
-    v: &PngEncoder, writer: &mut ZByteWriter, name: &[u8; 4], func: F
+    v: &PngEncoder,
+    writer: &mut ZByteWriter,
+    name: &[u8; 4],
+    func: F,
 ) {
     // format
     // length - chunk type - [data] -  crc chunk

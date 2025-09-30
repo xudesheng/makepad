@@ -68,7 +68,9 @@ pub fn idct_avx2(in_vector: &mut [i32; 64], out_vector: &mut [i16], stride: usiz
     clippy::zero_prefixed_literal
 )]
 pub unsafe fn idct_int_avx2_inner(
-    in_vector: &mut [i32; 64], out_vector: &mut [i16], stride: usize
+    in_vector: &mut [i32; 64],
+    out_vector: &mut [i16],
+    stride: usize,
 ) {
     let mut pos = 0;
 
@@ -128,7 +130,7 @@ pub unsafe fn idct_int_avx2_inner(
                         .unwrap()
                         .as_mut_ptr()
                         .cast(),
-                    $value
+                    $value,
                 );
                 $pos += stride;
             };
@@ -170,10 +172,10 @@ pub unsafe fn idct_int_avx2_inner(
             let mut t3 = p1 + row2 * 3135;
 
             let mut t0 = YmmRegister {
-                mm256: _mm256_slli_epi32((row0 + row4).mm256, 12)
+                mm256: _mm256_slli_epi32((row0 + row4).mm256, 12),
             };
             let mut t1 = YmmRegister {
-                mm256: _mm256_slli_epi32((row0 - row4).mm256, 12)
+                mm256: _mm256_slli_epi32((row0 - row4).mm256, 12),
             };
 
             let x0 = t0 + t3 + $SCALE_BITS;
@@ -217,13 +219,13 @@ pub unsafe fn idct_int_avx2_inner(
     // Process rows
     dct_pass!(512, 10);
     transpose(
-        &mut row0, &mut row1, &mut row2, &mut row3, &mut row4, &mut row5, &mut row6, &mut row7
+        &mut row0, &mut row1, &mut row2, &mut row3, &mut row4, &mut row5, &mut row6, &mut row7,
     );
 
     // process columns
     dct_pass!(SCALE_BITS, 17);
     transpose(
-        &mut row0, &mut row1, &mut row2, &mut row3, &mut row4, &mut row5, &mut row6, &mut row7
+        &mut row0, &mut row1, &mut row2, &mut row3, &mut row4, &mut row5, &mut row6, &mut row7,
     );
 
     // Pack i32 to i16's,
@@ -247,7 +249,7 @@ pub unsafe fn idct_int_avx2_inner(
                     .unwrap()
                     .as_mut_ptr()
                     .cast(),
-                _mm256_extractf128_si256::<0>(c)
+                _mm256_extractf128_si256::<0>(c),
             );
             $index += stride;
             // second vector
@@ -257,7 +259,7 @@ pub unsafe fn idct_int_avx2_inner(
                     .unwrap()
                     .as_mut_ptr()
                     .cast(),
-                _mm256_extractf128_si256::<1>(c)
+                _mm256_extractf128_si256::<1>(c),
             );
             $index += stride;
         };

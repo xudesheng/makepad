@@ -33,7 +33,7 @@ impl<T: ZReaderTrait> PngDecoder<T> {
 
         if self.png_info.width == 0 || self.png_info.height == 0 {
             return Err(PngDecodeErrors::GenericStatic(
-                "Width or height cannot be zero"
+                "Width or height cannot be zero",
             ));
         }
 
@@ -70,7 +70,7 @@ impl<T: ZReaderTrait> PngDecoder<T> {
             16 => {
                 if self.png_info.color == PngColor::Palette {
                     return Err(PngDecodeErrors::GenericStatic(
-                        "Indexed colour cannot have 16 bit depth"
+                        "Indexed colour cannot have 16 bit depth",
                     ));
                 }
             }
@@ -122,16 +122,16 @@ impl<T: ZReaderTrait> PngDecoder<T> {
         self.seen_hdr = true;
 
         let frame_info = FrameInfo {
-            seq_number:     -1,
-            width:          self.png_info.width,
-            height:         self.png_info.height,
-            x_offset:       0,
-            y_offset:       0,
-            delay_num:      0,
-            delay_denom:    0,
-            dispose_op:     DisposeOp::None,
-            blend_op:       BlendOp::Source,
-            is_part_of_seq: false
+            seq_number: -1,
+            width: self.png_info.width,
+            height: self.png_info.height,
+            x_offset: 0,
+            y_offset: 0,
+            delay_num: 0,
+            delay_denom: 0,
+            dispose_op: DisposeOp::None,
+            blend_op: BlendOp::Source,
+            is_part_of_seq: false,
         };
 
         self.frames.push(SingleFrame::new(vec![], Some(frame_info)));
@@ -142,7 +142,7 @@ impl<T: ZReaderTrait> PngDecoder<T> {
     pub(crate) fn parse_plte(&mut self, chunk: PngChunk) -> Result<(), PngDecodeErrors> {
         if chunk.length % 3 != 0 {
             return Err(PngDecodeErrors::GenericStatic(
-                "Invalid pLTE length, corrupt PNG"
+                "Invalid pLTE length, corrupt PNG",
             ));
         }
 
@@ -251,7 +251,7 @@ impl<T: ZReaderTrait> PngDecoder<T> {
 
         let actl = ActlChunk {
             num_frames,
-            num_plays
+            num_plays,
         };
         self.actl_info = Some(actl);
 
@@ -286,7 +286,7 @@ impl<T: ZReaderTrait> PngDecoder<T> {
             day,
             hour,
             minute,
-            second
+            second,
         };
         self.png_info.time_info = Some(time);
         // skip past crc
@@ -311,7 +311,7 @@ impl<T: ZReaderTrait> PngDecoder<T> {
         if !(data.starts_with(&[73, 73, 42, 0]) || data.starts_with(&[77, 77, 0, 42])) {
             if self.options.get_strict_mode() {
                 return Err(PngDecodeErrors::GenericStatic(
-                    "[strict-mode]: Invalid exif chunk"
+                    "[strict-mode]: Invalid exif chunk",
                 ));
             } else {
                 warn!("Invalid exif chunk, it doesn't start with the magic bytes")
@@ -415,7 +415,7 @@ impl<T: ZReaderTrait> PngDecoder<T> {
 
             let itxt_chunk = ItxtChunk {
                 keyword,
-                text: raw_data
+                text: raw_data,
             };
             self.png_info.itxt_chunk.push(itxt_chunk);
             // skip bytes we read
@@ -456,7 +456,7 @@ impl<T: ZReaderTrait> PngDecoder<T> {
             if let Ok(ztxt) = DeflateDecoder::new(data).decode_zlib() {
                 let chunk = ZtxtChunk {
                     keyword,
-                    text: ztxt
+                    text: ztxt,
                 };
                 self.png_info.ztxt_chunk.push(chunk);
             } else {
@@ -537,7 +537,8 @@ impl<T: ZReaderTrait> PngDecoder<T> {
     }
 
     pub(crate) fn parse_fctl_external(
-        &mut self, chunk: PngChunk
+        &mut self,
+        chunk: PngChunk,
     ) -> Result<FrameInfo, PngDecodeErrors> {
         if chunk.length != 26 {
             return Err(PngDecodeErrors::GenericStatic("Invalid fcTL length"));
@@ -562,7 +563,7 @@ impl<T: ZReaderTrait> PngDecoder<T> {
             delay_denom,
             dispose_op,
             blend_op,
-            is_part_of_seq: true
+            is_part_of_seq: true,
         };
         // skip crc
         self.stream.skip(4);

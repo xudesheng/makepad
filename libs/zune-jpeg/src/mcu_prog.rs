@@ -47,7 +47,8 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
     )]
     #[inline(never)]
     pub(crate) fn decode_mcu_ycbcr_progressive(
-        &mut self, pixels: &mut [u8]
+        &mut self,
+        pixels: &mut [u8],
     ) -> Result<(), DecodeErrors> {
         setup_component_params(self)?;
 
@@ -97,7 +98,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
             self.succ_high,
             self.succ_low,
             self.spec_start,
-            self.spec_end
+            self.spec_end,
         );
 
         // there are multiple scans in the stream, this should resolve the first scan
@@ -126,7 +127,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
                         self.succ_high,
                         self.succ_low,
                         self.spec_start,
-                        self.spec_end
+                        self.spec_end,
                     );
 
                     // after every SOS, marker, parse data for that scan.
@@ -179,7 +180,9 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
 
     #[allow(clippy::too_many_lines, clippy::cast_sign_loss)]
     fn parse_entropy_coded_data(
-        &mut self, stream: &mut BitStream, buffer: &mut [Vec<i16>; MAX_COMPONENTS]
+        &mut self,
+        stream: &mut BitStream,
+        buffer: &mut [Vec<i16>; MAX_COMPONENTS],
     ) -> Result<(), DecodeErrors> {
         stream.reset();
         self.components.iter_mut().for_each(|x| x.dc_pred = 0);
@@ -196,7 +199,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
             // Safety checks
             if self.spec_end != 0 && self.spec_start == 0 {
                 return Err(DecodeErrors::FormatStatic(
-                    "Can't merge DC and AC corrupt jpeg"
+                    "Can't merge DC and AC corrupt jpeg",
                 ));
             }
             // non interleaved data, process one block at a time in trivial scanline order
@@ -250,11 +253,11 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
                             .dc_huffman_tables
                             .get(pos)
                             .ok_or(DecodeErrors::FormatStatic(
-                                "No huffman table for DC component"
+                                "No huffman table for DC component",
                             ))?
                             .as_ref()
                             .ok_or(DecodeErrors::FormatStatic(
-                                "Huffman table at index  {} not initialized"
+                                "Huffman table at index  {} not initialized",
                             ))?;
 
                         let dc_pred = &mut self.components[k].dc_pred;
@@ -265,7 +268,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
                                 &mut self.stream,
                                 dc_table,
                                 &mut data[0],
-                                dc_pred
+                                dc_pred,
                             )?;
                         } else {
                             // refining scans for this MCU
@@ -308,7 +311,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
         } else {
             if self.spec_end != 0 {
                 return Err(DecodeErrors::HuffmanDecode(
-                    "Can't merge dc and AC corrupt jpeg".to_string()
+                    "Can't merge dc and AC corrupt jpeg".to_string(),
                 ));
             }
             // process scan n elements in order
@@ -358,7 +361,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
                             .ok_or(DecodeErrors::FormatStatic("No huffman table for component"))?
                             .as_ref()
                             .ok_or(DecodeErrors::FormatStatic(
-                                "Huffman table at index not initialized"
+                                "Huffman table at index not initialized",
                             ))?;
 
                         for v_samp in 0..component.vertical_sample {
@@ -374,7 +377,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
                                         &mut self.stream,
                                         huff_table,
                                         data,
-                                        &mut component.dc_pred
+                                        &mut component.dc_pred,
                                     )?;
                                 } else {
                                     stream.decode_prog_dc_refine(&mut self.stream, data)?;
@@ -398,7 +401,10 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::needless_range_loop, clippy::cast_sign_loss)]
     fn finish_progressive_decoding(
-        &mut self, block: &[Vec<i16>; MAX_COMPONENTS], _mcu_width: usize, pixels: &mut [u8]
+        &mut self,
+        block: &[Vec<i16>; MAX_COMPONENTS],
+        _mcu_width: usize,
+        pixels: &mut [u8],
     ) -> Result<(), DecodeErrors> {
         // This function is complicated because we need to replicate
         // the function in mcu.rs
@@ -444,7 +450,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
             // components.
             if min(
                 self.options.jpeg_get_out_colorspace().num_components() - 1,
-                pos
+                pos,
             ) == pos
                 || self.input_colorspace == ColorSpace::YCCK
                 || self.input_colorspace == ColorSpace::CMYK
@@ -534,7 +540,7 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
                 width,
                 padded_width,
                 &mut pixels_written,
-                &mut upsampler_scratch_space
+                &mut upsampler_scratch_space,
             )?;
         }
 
@@ -566,10 +572,11 @@ impl<T: ZReaderTrait> JpegDecoder<T> {
 ///
 /// This reads until it gets a marker or end of file is encountered
 fn get_marker<T>(
-    reader: &mut ZByteReader<T>, stream: &mut BitStream
+    reader: &mut ZByteReader<T>,
+    stream: &mut BitStream,
 ) -> Result<Marker, DecodeErrors>
 where
-    T: ZReaderTrait
+    T: ZReaderTrait,
 {
     if let Some(marker) = stream.marker {
         stream.marker = None;

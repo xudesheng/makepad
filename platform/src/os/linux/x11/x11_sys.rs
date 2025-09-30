@@ -1,16 +1,6 @@
 #![allow(non_upper_case_globals)]
 
-use std::os::raw::{
-    c_int,
-    c_uint,
-    c_short,
-    c_long,
-    c_ulong,
-    c_void,
-    c_char,
-    c_uchar,
-};
-
+use std::os::raw::{c_char, c_int, c_long, c_short, c_uchar, c_uint, c_ulong, c_void};
 
 pub type Display = _XDisplay;
 
@@ -23,7 +13,7 @@ pub type Pixmap = XID;
 pub type Cursor = XID;
 
 pub type Time = c_ulong;
-pub type XIM = *mut _XIM; 
+pub type XIM = *mut _XIM;
 pub type Atom = c_ulong;
 pub type XEvent = _XEvent;
 pub type XIC = *mut _XIC;
@@ -237,49 +227,41 @@ pub const XK_Left: u32 = 65361;
 pub const XK_Right: u32 = 65363;
 pub const XK_Down: u32 = 65364;
 pub const XK_Up: u32 = 65362;
-    
 
 #[link(name = "Xcursor")]
 extern "C" {
-    pub fn XcursorLibraryLoadCursor(
-        dpy: *mut Display,
-        file: *const c_char,
-    ) -> Cursor;
+    pub fn XcursorLibraryLoadCursor(dpy: *mut Display, file: *const c_char) -> Cursor;
 }
 
 #[link(name = "X11")]
 extern "C" {
     pub fn XOpenDisplay(arg1: *const c_char) -> *mut Display;
-    
+
     pub fn XConnectionNumber(arg1: *mut Display) -> c_int;
-    
+
     pub fn XOpenIM(
         arg1: *mut Display,
         arg2: *mut _XrmHashBucketRec,
         arg3: *mut c_char,
         arg4: *mut c_char,
     ) -> XIM;
-    
-    pub fn XInternAtom(
-        arg1: *mut Display,
-        arg2: *const c_char,
-        arg3: c_int,
-    ) -> Atom;
-    
+
+    pub fn XInternAtom(arg1: *mut Display, arg2: *const c_char, arg3: c_int) -> Atom;
+
     pub fn XrmInitialize();
-    
+
     pub fn XCloseIM(arg1: XIM) -> c_int;
-    
+
     pub fn XCloseDisplay(arg1: *mut Display) -> c_int;
-    
+
     pub fn XPending(arg1: *mut Display) -> c_int;
-    
+
     pub fn XNextEvent(arg1: *mut Display, arg2: *mut XEvent) -> c_int;
 
     pub fn XPeekEvent(arg1: *mut Display, arg2: *mut XEvent) -> c_int;
 
     pub fn XEventsQueued(arg1: *mut Display, arg2: c_int) -> c_int;
-    
+
     pub fn XGetWindowProperty(
         arg1: *mut Display,
         arg2: Window,
@@ -294,9 +276,9 @@ extern "C" {
         arg11: *mut c_ulong,
         arg12: *mut *mut c_uchar,
     ) -> c_int;
-    
+
     pub fn XFree(arg1: *mut c_void) -> c_int;
-    
+
     pub fn XChangeProperty(
         display: *mut Display,
         window: Window,
@@ -307,7 +289,7 @@ extern "C" {
         data: *const c_uchar,
         num_elements: c_int,
     ) -> c_int;
-    
+
     pub fn XSendEvent(
         arg1: *mut Display,
         arg2: Window,
@@ -315,9 +297,9 @@ extern "C" {
         arg4: c_long,
         arg5: *mut XEvent,
     ) -> c_int;
-    
+
     pub fn XDefaultScreen(arg1: *mut Display) -> c_int;
-    
+
     pub fn XRootWindow(arg1: *mut Display, arg2: c_int) -> Window;
 
     pub fn XGetVisualInfo(
@@ -333,7 +315,7 @@ extern "C" {
         arg3: *mut Visual,
         arg4: c_int,
     ) -> Colormap;
-    
+
     pub fn XCreateWindow(
         arg1: *mut Display,
         arg2: Window,
@@ -348,51 +330,34 @@ extern "C" {
         arg11: c_ulong,
         arg12: *mut XSetWindowAttributes,
     ) -> Window;
-    
-    pub fn XSetWMProtocols(
-        arg1: *mut Display,
-        arg2: Window,
-        arg3: *mut Atom,
-        arg4: c_int,
-    ) -> c_int;
-    
+
+    pub fn XSetWMProtocols(arg1: *mut Display, arg2: Window, arg3: *mut Atom, arg4: c_int)
+        -> c_int;
+
     pub fn XMapWindow(arg1: *mut Display, arg2: Window) -> c_int;
 
-    pub fn XMoveWindow(
-        display: *mut Display,
-        window: Window,
-        x: c_int,
-        y: c_int,
-    );
-    
+    pub fn XMoveWindow(display: *mut Display, window: Window, x: c_int, y: c_int);
+
     pub fn XFlush(arg1: *mut Display) -> c_int;
-    
-    pub fn XStoreName(
-        arg1: *mut Display,
-        arg2: Window,
-        arg3: *const c_char,
-    ) -> c_int;
-    
+
+    pub fn XStoreName(arg1: *mut Display, arg2: Window, arg3: *const c_char) -> c_int;
+
     pub fn XCreateIC(arg1: XIM, ...) -> XIC;
-    
+
     pub fn XDestroyWindow(arg1: *mut Display, arg2: Window) -> c_int;
-    
-    pub fn XIconifyWindow(
-        arg1: *mut Display,
-        arg2: Window,
-        arg3: c_int,
-    ) -> c_int;
-    
+
+    pub fn XIconifyWindow(arg1: *mut Display, arg2: Window, arg3: c_int) -> c_int;
+
     pub fn XGetWindowAttributes(
         arg1: *mut Display,
         arg2: Window,
         arg3: *mut XWindowAttributes,
     ) -> c_int;
-    
+
     pub fn XResourceManagerString(arg1: *mut Display) -> *mut c_char;
-    
+
     pub fn XrmGetStringDatabase(arg1: *const c_char) -> XrmDatabase;
-    
+
     pub fn XrmGetResource(
         arg1: XrmDatabase,
         arg2: *const c_char,
@@ -400,7 +365,7 @@ extern "C" {
         arg4: *mut *mut c_char,
         arg5: *mut XrmValue,
     ) -> c_int;
-    
+
     pub fn XConvertSelection(
         arg1: *mut Display,
         arg2: Atom,
@@ -409,23 +374,13 @@ extern "C" {
         arg5: Window,
         arg6: Time,
     ) -> c_int;
-    
-    pub fn XSetInputFocus(
-        arg1: *mut Display,
-        arg2: Window,
-        arg3: c_int,
-        arg4: Time,
-    ) -> c_int;
-    
+
+    pub fn XSetInputFocus(arg1: *mut Display, arg2: Window, arg3: c_int, arg4: Time) -> c_int;
+
     pub fn XUngrabPointer(arg1: *mut Display, arg2: Time) -> c_int;
-    
-    pub fn XSetSelectionOwner(
-        arg1: *mut Display,
-        arg2: Atom,
-        arg3: Window,
-        arg4: Time,
-    ) -> c_int;
-    
+
+    pub fn XSetSelectionOwner(arg1: *mut Display, arg2: Atom, arg3: Window, arg4: Time) -> c_int;
+
     pub fn Xutf8LookupString(
         arg1: XIC,
         arg2: *mut XKeyPressedEvent,
@@ -434,7 +389,7 @@ extern "C" {
         arg5: *mut KeySym,
         arg6: *mut c_int,
     ) -> c_int;
-    
+
     pub fn XDefineCursor(arg1: *mut Display, arg2: Window, arg3: Cursor) -> c_int;
     pub fn XFreeCursor(arg1: *mut Display, arg2: Cursor) -> c_int;
     pub fn XLookupString(
@@ -482,9 +437,8 @@ pub struct _XComposeStatus {
 pub struct _XExtData {
     pub number: c_int,
     pub next: *mut _XExtData,
-    pub free_private: ::std::option::Option<
-    unsafe extern "C" fn(extension: *mut _XExtData) -> c_int,
-    >,
+    pub free_private:
+        ::std::option::Option<unsafe extern "C" fn(extension: *mut _XExtData) -> c_int>,
     pub private_data: XPointer,
 }
 
@@ -1122,4 +1076,3 @@ pub union _XEvent {
     pub pad: [c_long; 24usize],
     _bindgen_union_align: [u64; 24usize],
 }
-

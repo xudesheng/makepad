@@ -1,49 +1,43 @@
-use crate::{
-    makepad_derive_widget::*,
-    makepad_draw::*,
-    view::*,
-    label::*,
-    widget::*
-};
+use crate::{label::*, makepad_derive_widget::*, makepad_draw::*, view::*, widget::*};
 
-live_design!{
+live_design! {
     link widgets;
     use link::widgets::*;
     use link::theme::*;
     use makepad_draw::shader::std::*;
-    
+
     pub TooltipBase = {{Tooltip}} {}
     pub Tooltip = <TooltipBase> {
         width: Fill,
         height: Fill,
-        
+
         flow: Overlay
         align: {x: 0.0, y: 0.0}
-        
+
         draw_bg: {
             fn pixel(self) -> vec4 {
                 return vec4(0., 0., 0., 0.0)
             }
         }
-        
+
         content: <View> {
             flow: Overlay
             width: Fit
             height: Fit
-            
+
             <RoundedView> {
                 width: Fit,
                 height: Fit,
-                
+
                 padding: 16,
-                
+
                 draw_bg: {
                     color: #fff,
                     border_size: 1.0,
                     border_color: #D0D5DD,
                     radius: 2.
                 }
-                
+
                 tooltip_label = <Label> {
                     width: 270,
                     draw_text: {
@@ -91,13 +85,13 @@ impl Widget for Tooltip {
             Hit::FingerUp(fue) if fue.is_over => {
                 self.hide(cx);
             }
-            _ => { }
+            _ => {}
         }
     }
 
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, _walk: Walk) -> DrawStep {
         self.draw_list.begin_overlay_reuse(cx);
-        
+
         let size = cx.current_pass_size();
         cx.begin_root_turtle(size, self.layout);
         self.draw_bg.begin(cx, self.walk, self.layout);
@@ -114,7 +108,7 @@ impl Widget for Tooltip {
         DrawStep::done()
     }
 
-    fn set_text(&mut self, cx:&mut Cx, text: &str) {
+    fn set_text(&mut self, cx: &mut Cx, text: &str) {
         self.label(id!(tooltip_label)).set_text(cx, text);
     }
 }
@@ -147,7 +141,7 @@ impl Tooltip {
 }
 
 impl TooltipRef {
-    pub fn set_text(&mut self, cx:&mut Cx, text: &str) {
+    pub fn set_text(&mut self, cx: &mut Cx, text: &str) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.set_text(cx, text);
         }

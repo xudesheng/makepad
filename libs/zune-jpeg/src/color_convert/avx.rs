@@ -48,7 +48,7 @@ pub union YmmRegister {
     // both are 32 when using std::mem::size_of
     mm256: __m256i,
     // for avx color conversion
-    array: [i16; 16]
+    array: [i16; 16],
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -73,7 +73,11 @@ pub union YmmRegister {
 /// - `offset`: The position from 0 where we write these RGB values
 #[inline(always)]
 pub fn ycbcr_to_rgb_avx2(
-    y: &[i16; 16], cb: &[i16; 16], cr: &[i16; 16], out: &mut [u8], offset: &mut usize
+    y: &[i16; 16],
+    cb: &[i16; 16],
+    cr: &[i16; 16],
+    out: &mut [u8],
+    offset: &mut usize,
 ) {
     // call this in another function to tell RUST to vectorize this
     // storing
@@ -86,7 +90,11 @@ pub fn ycbcr_to_rgb_avx2(
 #[target_feature(enable = "avx2")]
 #[target_feature(enable = "avx")]
 unsafe fn ycbcr_to_rgb_avx2_1(
-    y: &[i16; 16], cb: &[i16; 16], cr: &[i16; 16], out: &mut [u8], offset: &mut usize
+    y: &[i16; 16],
+    cb: &[i16; 16],
+    cr: &[i16; 16],
+    out: &mut [u8],
+    offset: &mut usize,
 ) {
     // Load output buffer
     let tmp: &mut [u8; 48] = out
@@ -126,7 +134,9 @@ unsafe fn ycbcr_to_rgb_avx2_1(
 #[target_feature(enable = "avx2")]
 #[target_feature(enable = "avx")]
 unsafe fn ycbcr_to_rgb_baseline(
-    y: &[i16; 16], cb: &[i16; 16], cr: &[i16; 16]
+    y: &[i16; 16],
+    cb: &[i16; 16],
+    cr: &[i16; 16],
 ) -> (YmmRegister, YmmRegister, YmmRegister) {
     // Load values into a register
     //
@@ -157,7 +167,7 @@ unsafe fn ycbcr_to_rgb_baseline(
     //y+r2
 
     let r = YmmRegister {
-        mm256: clamp_avx(_mm256_add_epi16(y_c, r2))
+        mm256: clamp_avx(_mm256_add_epi16(y_c, r2)),
     };
 
     // g = Y - (11 * Cb + 23 * Cr) / 32 ;
@@ -177,7 +187,7 @@ unsafe fn ycbcr_to_rgb_baseline(
 
     // Y - (11 * Cb + 23 * Cr) / 32 ;
     let g = YmmRegister {
-        mm256: clamp_avx(_mm256_sub_epi16(y_c, g4))
+        mm256: clamp_avx(_mm256_sub_epi16(y_c, g4)),
     };
 
     // b = Y + 113 * Cb / 64
@@ -189,7 +199,7 @@ unsafe fn ycbcr_to_rgb_baseline(
 
     // b = Y + 113 * Cb / 64 ;
     let b = YmmRegister {
-        mm256: clamp_avx(_mm256_add_epi16(b2, y_c))
+        mm256: clamp_avx(_mm256_add_epi16(b2, y_c)),
     };
 
     return (r, g, b);
@@ -203,7 +213,9 @@ unsafe fn ycbcr_to_rgb_baseline(
 /// This is used by the `ycbcr_to_rgba_avx` and `ycbcr_to_rgbx` conversion
 /// routines
 unsafe fn ycbcr_to_rgb_baseline_no_clamp(
-    y: &[i16; 16], cb: &[i16; 16], cr: &[i16; 16]
+    y: &[i16; 16],
+    cb: &[i16; 16],
+    cr: &[i16; 16],
 ) -> (__m256i, __m256i, __m256i) {
     // Load values into a register
     //
@@ -266,7 +278,11 @@ unsafe fn ycbcr_to_rgb_baseline_no_clamp(
 
 #[inline(always)]
 pub fn ycbcr_to_rgba_avx2(
-    y: &[i16; 16], cb: &[i16; 16], cr: &[i16; 16], out: &mut [u8], offset: &mut usize
+    y: &[i16; 16],
+    cb: &[i16; 16],
+    cr: &[i16; 16],
+    out: &mut [u8],
+    offset: &mut usize,
 ) {
     unsafe {
         ycbcr_to_rgba_unsafe(y, cb, cr, out, offset);
